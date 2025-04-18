@@ -1,0 +1,194 @@
+
+.container {
+  flex:1;
+  height:100%;
+  width:100%;
+  overflow: hidden;
+
+  display:flex;
+  flex-direction: row;
+}
+
+.editor {
+  flex: 1;
+  margin: 5px;
+  border-radius: 15px;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.extra {
+  display: flex;
+  justify-content: flex-end;
+  z-index: 99;
+}
+.extra .item{
+  width: 50px;
+  border-radius: 15px;
+  margin: 3px;
+  background-color: light-dark(#e0e0e0, #191919);
+}
+
+
+.sidebar {
+  width:360px;
+  display: flex;
+  flex-direction: column;
+  margin: 15px;
+  overflow-y: auto;
+} 
+
+.section {
+  background-color:light-dark(#e0e0e0,#191919);
+  border-radius: 15px;
+  padding: 10px;
+  margin: 2px 0;
+  font-size:14px;
+}
+
+@media (orientation: portrait) {
+  .container {
+    flex-direction: column;
+  }
+  .sidebar {
+    width:95%;
+    max-width: 400px;
+    height: 200px;
+    margin: 15px auto;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+.editor #zoomable{
+  width: 100%;
+  height: 99%; /*100% created some artifacts on Safari?!?*/
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.editor #pannable{
+  max-width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.editor #canvas {
+}
+.editor #canvas.checkered {
+  /*
+  background-color: rgb(255, 255, 255);
+  background-image: repeating-conic-gradient(rgb(204, 204, 204) 0deg, rgb(204, 204, 204) 25%, rgb(255, 255, 255) 0deg, rgb(255, 255, 255) 50%);
+  background-position-x: 0px, 0.5rem;
+  background-position-y: 0px, 0.5rem;
+  background-size: 1rem 1rem;
+  */
+  /*
+  outline: 1px solid;
+  outline-offset: -1px;
+  outline-color:light-dark(white,black);
+  */
+}
+
+
+.sidebar input[type='range'] {
+  -webkit-appearance: none;
+  cursor: pointer;
+  border: 0;
+  height: 4px;
+  padding: 0;
+  flex: 1;
+  background-color: light-dark(#bbbbbb, #303030);
+
+  
+  &#lights_brightness {
+      background: linear-gradient(90deg, #242424, #CCCCCC);
+  }
+  &#lights_exposure {
+      background: linear-gradient(90deg, #242424, #CCCCCC);
+  }
+  &#lights_gamma {
+      background: linear-gradient(90deg, #242424, #CCCCCC);
+  }
+  &#lights_contrast {
+      background: linear-gradient(270deg, #242424, #CCCCCC);
+  }
+  &#lights_shadows {
+      background: linear-gradient(270deg, #242424, #CCCCCC);
+  }
+  &#lights_highlights {
+      background: linear-gradient(90deg, #242424, #CCCCCC);
+  }
+  &#lights_bloom {
+      background: linear-gradient(90deg, #242424, #CCCCCC);
+  }
+
+  &#colors_temperature {
+      background: linear-gradient(90deg, #2c75d3, #ddbc57);
+  }
+  &#colors_tint {
+      background: linear-gradient(to left, rgb(58, 224, 0), rgb(150, 0, 229)); /*linear-gradient(90deg, #d32cca, #57dd67);*/
+  }
+  &#colors_vibrance {
+      background: linear-gradient(90deg, #7f7f7f, #827f7c, #818078, #798378, #6f867f, #69878b, #628a98, #48949b, #2d9d93, #27a57e, #43aa60, #74ac3e, #a8a823, #e0792a, #f8396b, #9900cd);
+  }
+  &#colors_saturation {
+      background: linear-gradient(90deg, #7f7f7f, #827f7c, #818078, #798378, #6f867f, #69878b, #628a98, #48949b, #2d9d93, #27a57e, #43aa60, #74ac3e, #a8a823, #e0792a, #f8396b, #9900cd);
+  }
+  &#colors_sepia {
+      background: linear-gradient(90deg, #242424, #ddbc57);
+  }
+
+  &#effects_vignette {
+      background: linear-gradient(270deg, #242424, #CCCCCC);
+  }
+
+
+} 
+.sidebar input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: gray;
+}
+input[type=range]::-moz-range-thumb {
+  background-color: gray;
+}
+
+
+
+
+.reset_btn{
+  font-weight: bold;
+}
+.reset_btn[disabled]{
+  font-weight: normal;
+}
+
+
+.crop_btn {
+  width: 38px;
+  color: light-dark(white,#999);
+  padding: 0;
+  margin: 2px;
+  border-radius:50%;
+}
+
+.section b{
+  color:gray;
+}
+.section[s_selected] b{
+  color:darkorange;
+}

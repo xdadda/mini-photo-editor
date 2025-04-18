@@ -1,0 +1,22 @@
+{
+  "name": "mini_editor",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5174 --host 0.0.0.0",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@xdadda/mini": "^0.2.5",
+    "@xdadda/mini-exif": "^0.1.0",
+    "@xdadda/mini-gl": "^0.1.0"
+  },
+  "devDependencies": {
+    "rollup-plugin-minify-template-literals": "^1.1.7",
+    "vite": "^6.2.2"
+  }
+}

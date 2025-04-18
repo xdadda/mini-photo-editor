@@ -1,0 +1,47 @@
+.app {
+  position: absolute;
+  overflow: hidden;
+  top:0;
+  left:0;
+  height: 100vh;
+  width: 100vw;
+ 
+  display: flex;
+  flex-direction: column;
+  overscroll-behavior: contain; /* required to fix broken ios scroll in fixed element  https://stackoverflow.com/questions/64344560/ios-safari-scrolling-is-broken-inside-position-fixed-elements */
+  text-align: center;
+
+  color: inherit;
+  background-color: inherit;
+  user-select: none;
+  touch-action: none;
+}
+.header, .footer{
+  flex: 0 0 auto;
+  height: 38px;
+  line-height: 38px;
+  z-index: 2;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: auto hidden;
+  display: flex;
+  justify-content: space-between;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.header {
+  padding-top: env(safe-area-inset-top);
+  mask: linear-gradient(to bottom, rgba(0,0,0,1) 90%, rgba(0,0,0,0));
+}
+.footer {
+  padding-bottom: env(safe-area-inset-bottom);
+  mask: linear-gradient(to top, rgba(0,0,0,1) 90%, rgba(0,0,0,0));
+  align-items: center;
+}
+.main {
+  flex: 1 1 auto;
+  overflow: hidden auto;
+}
+

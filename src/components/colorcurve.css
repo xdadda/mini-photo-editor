@@ -1,0 +1,7 @@
+.clrspace{
+  width:20px;height:20px;border-radius:50%;
+  border: 1px solid;
+}
+.clrspace.selected{
+  border: 3px solid;
+}
