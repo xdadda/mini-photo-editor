@@ -1,8 +1,9 @@
 import { html, reactive, onMount, onUnmount} from 'mini'
 import './cropper.css'
 
-export default function Cropper(canvas, params, trs) {
-
+export default function Cropper(canvas, adj) {
+    const params = adj.crop
+    const trs = adj.trs
 
     onMount(()=>{
       resetCropRect(params.currentcrop)    
@@ -156,7 +157,7 @@ export default function Cropper(canvas, params, trs) {
     
     ////this is a UI hack, need to change a button outside of this component ... sorry
     function toggleResetComposition(){      
-      if(Object.values(trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params).reduce((p,v)=>p+=v,0)===0 ) btn_reset_comp.setAttribute('disabled',true)
+      if(Object.values(trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0) btn_reset_comp.setAttribute('disabled',true)
       else btn_reset_comp.removeAttribute('disabled')
     }
 

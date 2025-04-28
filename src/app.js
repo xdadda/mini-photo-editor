@@ -1,4 +1,3 @@
-//TODO: implement perspective correction tool
 //TODO: 
 
 import { html, reactive, onMount, onUnmount} from 'mini'
@@ -6,7 +5,6 @@ import { alert } from 'mini/components'
 import 'mini/components.css'
 import store from 'mini/store' //'./store.js'
 
-//import { readEXIF, writeEXIFtoJPG, writeEXIFtoPNG } from 'mini-exif'
 import miniExif from 'mini-exif'
 import { minigl} from 'mini-gl'
 import logo from '/icon.png'
@@ -23,13 +21,11 @@ import SplitView from './components/splitview.js'
 import clickdropFile from './components/clickdropFile.js'
 import downloadImage from './components/downloadImage.js'
 
-import Quad from './components/perspective.js'
 
 import composition from './_composition.js'
 import adjustments from './_adjustments.js'
 import curves from './_curves.js'
 import filters from './_filters.js'
-import perspective from './_perspective.js'
 
 const initstate = {
   appname:'MiNi PhotoEditor',
@@ -140,29 +136,33 @@ export function App(){ //this -- includes url and user
 
       _minigl.loadImage() //load image's texture
 
+
+
       // TRANSLATE/ROTATE/SCALE filter
       if(cropping || adj.crop.glcrop){
         adj.trs.angle+=adj.crop.canvas_angle
         _minigl.filterMatrix(adj.trs)
-        adj.trs.angle-=adj.crop.canvas_angle        
-      }
+        adj.trs.angle-=adj.crop.canvas_angle
 
-      if(flatparams.quad) {
-        //console.log('perspective',flatparams.quad)
-        let before=[[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
-        //let before=[[0,0], [1,0], [1,1], [0,1]]
-        before = before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
-        let after = flatparams.quad.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
-        _minigl.filterPerspective(before,after, false, false)
+
+        if(adj.perspective.quad) {
+          let before=[[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
+          before = before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+          let after = (adj.perspective.quad).map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+          _minigl.filterPerspective(before,after, false, false)
+        }
+
       }
 
       // RUN CROP when set (crop image after TRS but before other filters)
       if(adj.crop.glcrop) {
         _minigl.crop(adj.crop.glcrop)
         adj.crop.glcrop=0
-        adj.perspective.quad=0
         return updateGL()
       }
+
+
+
 
       // other filters
       _minigl.filterAdjustments({...flatparams})
@@ -376,6 +376,7 @@ export function App(){ //this -- includes url and user
 
     async function handleCrop(){
       if(!croprect) return //croprect is the DOM element with the crop size
+      crop.style.display='' //if it was hidden by perspective
       const ratio=canvas.width/crop.offsetWidth
       adj.crop.glcrop={
         left:Math.round((croprect.offsetLeft)*ratio),
@@ -425,9 +426,9 @@ export function App(){ //this -- includes url and user
                 <div id="zoomable" @dblclick="${canvas_dblclick}" @click="${canvas_click}">
                   <div id="pannable">
                     <canvas :ref="${$canvas}" id="canvas" class="checkered"></canvas>
-                    ${()=>$selection.value==='perspective' && Quad(canvas, adj.perspective, updateGL)}
                     ${()=>$showsplit.value && SplitView(splitimage,canvas.style.width,canvas.style.height,splitwidth,onSplitUpdate)}                    
-                    ${()=>$selection.value==='composition' && Cropper(canvas, adj.crop, adj.trs)}
+                    ${()=>$selection.value==='composition' && Cropper(canvas, adj)}
+                    <div id="plcquad" style="display: contents;"></div>
                   </div>
                 </div>
               </div>
@@ -449,9 +450,6 @@ export function App(){ //this -- includes url and user
 
                 /******** COMPOSITION *******/
                 ${composition($selection,handleSelection,adj,updateGL,()=>_minigl,centerCanvas)}
-
-                /******** PERSPECTIVE *******/
-                /*${perspective($selection,handleSelection,adj.perspective,updateGL,()=>_minigl,centerCanvas)}*/
 
                 /******** ADJUSTMENTS *******/
                 ${adjustments($selection,handleSelection,adj,updateGL)}
@@ -481,7 +479,8 @@ export function App(){ //this -- includes url and user
   `
 }
 
-/*
-*/
+
+
+
 
 

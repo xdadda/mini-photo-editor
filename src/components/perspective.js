@@ -1,21 +1,22 @@
 import { html, reactive, onMount, onUnmount} from 'mini'
 
 
-export default function Quad(canvas, params, onUpdate){
-
-
+export default function Quad(canvas, adj, onUpdate){
+    let params = adj.perspective
 
     onMount(()=>{
       quadcontainer.addEventListener("pointerdown", dragstart);
-      quadcanvas.width=canvas.width
-      quadcanvas.height=canvas.height
+      //quadcanvas.width=canvas.width
+      //quadcanvas.height=canvas.height
+      quadcanvas.width=canvas.offsetWidth
+      quadcanvas.height=canvas.offsetHeight
       w = canvas.offsetWidth
       h = canvas.offsetHeight
       c = quadcanvas.getContext('2d');
       quadcontainer.style.width=w+'px'
       quadcontainer.style.height=h+'px'
       draw()
-      params.resetFn=resetQuad
+      params.resetFn=reset
     })
 
     onUnmount(()=>{
@@ -69,6 +70,7 @@ export default function Quad(canvas, params, onUpdate){
     }
 
     function draw(){
+      if(!document.getElementById('qpt'+0)) return
       //position draggable points
       points.forEach((e,i)=>{
         const pt = document.getElementById('qpt'+i)
@@ -77,13 +79,13 @@ export default function Quad(canvas, params, onUpdate){
       })
 
       c.fillStyle = "blue";
-      c.clearRect(0, 0, canvas.width, canvas.height);
-      c.lineWidth = 8;
+      c.clearRect(0, 0, quadcanvas.width, quadcanvas.height);
+      c.lineWidth = 3;
       c.strokeStyle = 'red';
       c.beginPath();
       for (var i = 0; i < 4; i++) {
-          const x = points[i][0]*canvas.width
-          const y = points[i][1]*canvas.height
+          const x = points[i][0]*quadcanvas.width
+          const y = points[i][1]*quadcanvas.height
           c.lineTo(x,y)
       }
       c.closePath();
@@ -93,16 +95,19 @@ export default function Quad(canvas, params, onUpdate){
       if(onUpdate) onUpdate()
     }
 
-    function resetQuad(){
+    function reset(){
       params.modified=false
       points = [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
+      params.quad=points
       draw()
     }
 
     ////this is a UI hack, need to change a button outside of this component ... sorry
-    function toggleResetComposition(){      
+    function toggleResetComposition(){
+      /*  
       if(params.modified==0) btn_reset_perspective.setAttribute('disabled',true)
       else btn_reset_perspective.removeAttribute('disabled')
+      */
     }
 
 
@@ -112,7 +117,7 @@ export default function Quad(canvas, params, onUpdate){
         #quadcanvas{width:inherit;height: inherit;overflow:hidden;border:0px solid white;background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);background-size: 9.99% 9.99%;}
         .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;}
       </style>
-      <div id="quadcontainer" @dblclick="${resetQuad}">
+      <div id="quadcontainer" @dblclick="${reset}">
         <canvas id="quadcanvas"></canvas>
         ${points?.map((e,i)=>html`
             <div id="qpt${i}" class="point"></div>

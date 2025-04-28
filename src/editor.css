@@ -102,6 +102,7 @@
 }
 
 .editor #canvas {
+  cursor: move;
 }
 .editor #canvas.checkered {
   /*

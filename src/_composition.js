@@ -1,11 +1,13 @@
-import { html, reactive, onMount } from 'mini'
+import { render, html, reactive, onMount } from 'mini'
 import icon_rotate from './assets/icon_rotate.svg?raw'
 import icon_flip from './assets/icon_flip.svg?raw'
+
+import Quad from './components/perspective.js'
 
 
 export default function composition($selection, handleSelection,  adj, onUpdate, get_minigl, centerCanvas){
   let _minigl
-  //const $ar=reactive()
+  let prevselection
 
   reactive(()=>{
     if($selection.value==='composition'){
@@ -15,9 +17,20 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
       arsvalues[2]=1/arsvalues[1]
       _minigl.resetCrop()
       updateCanvasAngle()
-      onUpdate()      
+      onUpdate()
+      prevselection=$selection.value
+      updateResetBtn()
+    }
+    else {
+      if(prevselection==='composition') {
+        updateResetBtn()
+        hidePerspective()
+        prevselection=undefined
+      }
     }
   },{effect:true})
+
+
 
   ///// CROP
   
@@ -41,8 +54,12 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         fliph.removeAttribute('selected')
         flipv.removeAttribute('selected')
 
+        if(adj.perspective?.resetFn) adj.perspective.resetFn()
+        hidePerspective()
+
         resetCropRect()
         updateResetBtn()
+
         //showCrop()
         onUpdate()
     }
@@ -102,8 +119,9 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
       onUpdate()
     }
 
-    function updateResetBtn(){      
-      if(Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 ) btn_reset_comp.setAttribute('disabled',true)
+    function updateResetBtn(){
+      const flag = Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0
+      if(flag) btn_reset_comp.setAttribute('disabled',true)
       else btn_reset_comp.removeAttribute('disabled')
     }
 
@@ -165,6 +183,28 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
     }
   /////////////////
 
+  ///// PERSPECTIVE
+    let persp=reactive(false)
+    let perspel
+    async function showPerspective(){
+      persp.value=true
+      perspel = await render(plcquad,()=>Quad(canvas,adj,()=>{updateResetBtn();onUpdate()}))
+      crop.style.display='none'
+    }
+    function hidePerspective(){
+      if(!perspel) return
+      perspel.destroy()
+      perspel=undefined
+      const crop=document.getElementById('crop')
+      if(crop) crop.style.display='' //will be set by handleCrop
+      persp.value=false
+    }
+    function togglePerspective(){
+      if(persp.value) hidePerspective()
+      else showPerspective()
+    }
+  /////////////////
+
   return html`
     <style>
       .crop_btn {
@@ -177,7 +217,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         stroke: white;
       }
     </style>
-    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:170px;'}">
+    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:225px;'}">
         <div style="display:flex;justify-content: space-between;cursor:pointer;" @click="${()=>handleSelection('composition')}">
           <b>composition</b><a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
         </div>
@@ -204,6 +244,8 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
                   <button id="ar_${i}" @click="${()=>setCropAR(i)}" class="crop_btn" selected="${i===adj.crop.arindex }" @dblclick="${resetCropRect}">${e}</button>
                 `)}
               </div>
+            <hr>
+              <button :selected="${()=>!!persp.value}" @click="${togglePerspective}">perspective</button>
           </div>
         `}
     </div>
