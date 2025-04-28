@@ -387,7 +387,38 @@ export function App(){ //this -- includes url and user
       updateGL()
       centerCanvas()
     }
+  /////////////////
+
+  ///// SAMPLE IMAGES
+
+    async function samples(){
+      alert((handleClose)=>html`
+          <div style="height:250px">
+            <img id="snail.jpg" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:20px;border-radius:10px;" src="/samples/snail-8577681_1280.jpg" title="jpg" width=130>
+            <img id="seagull.png" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:160px;border-radius:10px;" src="/samples/seagull-8547189_1280.png" title="png" width=150>
+            <img id="water.jpg" @click="${openSample}" style="cursor:pointer;position:absolute;top:145px;left:160px;border-radius:10px;" src="/samples/water-8100724_1280.jpg" title="jpg" width=150>
+            <img id="perspective.jpg" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:320px;border-radius:10px;" src="/samples/perspective2.jpg" title="jpg" width=137>
+          </div>
+      `,460)
+    }
+
+    function openSample(){
+      fetch( this.src )
+        .then( r => r.arrayBuffer() )
+        .then( async (buffer) => {
+          // there is no buffer.data here
+          const blob = new Blob( [ buffer ] );
+          const img = new Image();
+          await new Promise((r,j) => {img.onload=r; img.onerror=j; img.src=URL.createObjectURL(blob); })
+          onImageLoaded(buffer, {name:this.id,size:buffer.byteLength}, img)
+          //quick hack to close the window
+          root.lastElementChild.remove()
+        } );
+    }
+
   ///////////////// 
+
+
 
   return html`
     <div class="app">
@@ -405,8 +436,15 @@ export function App(){ //this -- includes url and user
               ${store('appname')}
             </h1>
 
-            <style>#clickdrop_btn{height: 120px;color:light-dark(white,#dbdbdb);}</style>
-            ${clickdropFile('click or drop<br> to load file','image/*',(file)=>readImage(file, onImageLoaded))}
+            <div>
+              
+              <style>#clickdrop_btn{height: 120px;color:light-dark(white,#dbdbdb);}</style>
+              ${clickdropFile('click or drop<br> to load file','image/*',(file)=>readImage(file, onImageLoaded))}
+
+              <button style="height: 80px;width:80px;color:light-dark(white,#dbdbdb);" @click="${samples}">sample images</button>
+
+            </div>
+            <div style="font-size:13px;color:gray;"><i>images are edited locally<br>no data is sent anywhere</i></div>
           </div>
         </div>
       `}

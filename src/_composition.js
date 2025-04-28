@@ -219,7 +219,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
     </style>
     <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:225px;'}">
         <div style="display:flex;justify-content: space-between;cursor:pointer;" @click="${()=>handleSelection('composition')}">
-          <b>composition</b><a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
+          <b>crop & perspective</b><a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
         </div>
 
         ${()=>$selection.value==='composition' && html`
