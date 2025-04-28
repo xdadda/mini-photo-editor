@@ -511,7 +511,7 @@ export function App(){ //this -- includes url and user
 
       <div class="footer" style="height:30px;">
         <div style="width: 100%;margin:0 10px;text-align: right;font-size: 10px;">
-          <a href="https://github.com/xdadda/mini-photo-editor" target="_blank"><img src="${github}" style="width:15px;"></a>
+          <a href="https://github.com/abdibrokhim/mini-photo-editor" target="_blank"><img src="${github}" style="width:15px;"></a>
         </div>
       </div>
 
