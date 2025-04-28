@@ -1,8 +1,13 @@
-# mini-img-editor
+# mini-img-editor (now AI powered 😅)
 
-Online webgl2 photo editor<br>
-Link https://mini2-photo-editor.netlify.app <br>
+Online webgl2 photo editor with AI image generation using OpenAI latest `gpt-image-1` model API.
 
-![Screenshot](screenshot.jpg)
+<br>
 
-Powered by mini-js (https://github.com/xdadda/minijs) and mini-gl (https://github.com/xdadda/mini-gl)
+Link https://mei.yaps.gg
+
+<br>
+
+![ai screenshot](ai-screenshot.png)
+
+Powered by mini-js (https://github.com/xdadda/minijs) and mini-gl (https://github.com/xdadda/mini-gl) and (https://yaps.gg)

@@ -20,7 +20,7 @@ import Cropper from './components/cropper.js'
 import SplitView from './components/splitview.js'
 import clickdropFile from './components/clickdropFile.js'
 import downloadImage from './components/downloadImage.js'
-
+import openAIGenerate from './components/generateImage.js'
 
 import composition from './_composition.js'
 import adjustments from './_adjustments.js'
@@ -442,6 +442,7 @@ export function App(){ //this -- includes url and user
               ${clickdropFile('click or drop<br> to load file','image/*',(file)=>readImage(file, onImageLoaded))}
 
               <button style="height: 80px;width:80px;color:light-dark(white,#dbdbdb);" @click="${samples}">sample images</button>
+              <button style="height: 80px;width:80px;color:light-dark(white,#dbdbdb);" @click="${()=>openAIGenerate(onImageLoaded)}">generate with AI</button>
 
             </div>
             <div style="font-size:13px;color:gray;"><i>images are edited locally<br>no data is sent anywhere</i></div>
@@ -477,6 +478,7 @@ export function App(){ //this -- includes url and user
                   <style>#clickdrop_btn{width: 120px;}</style>
                   ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded))}
                   <button style="width:120px;" id="btn_download" @click="${()=>downloadImage($file,_exif,_minigl)}">download</button>
+                  <button style="width:120px;" id="btn_generate" @click="${()=>openAIGenerate(onImageLoaded)}">generate with AI</button>
                 </div>
 
                 <div>
