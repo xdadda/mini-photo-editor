@@ -1,13 +1,13 @@
-//TODO: checkout shaders at https://img.ly/products/photo-sdk/demo
-//TODO: fix zoom not readibly available on Safari .. need dblclick or something ..
 //TODO: implement perspective correction tool
+//TODO: 
 
 import { html, reactive, onMount, onUnmount} from 'mini'
-import { alert, confirm } from 'mini/components'
+import { alert } from 'mini/components'
 import 'mini/components.css'
 import store from 'mini/store' //'./store.js'
 
-import { readEXIF, writeEXIFtoJPG } from 'mini-exif'
+//import { readEXIF, writeEXIFtoJPG, writeEXIFtoPNG } from 'mini-exif'
+import miniExif from 'mini-exif'
 import { minigl} from 'mini-gl'
 import logo from '/icon.png'
 import github from './assets/icon_github.png'
@@ -21,11 +21,15 @@ import GPSMap from './components/gpsmap.js'
 import Cropper from './components/cropper.js'
 import SplitView from './components/splitview.js'
 import clickdropFile from './components/clickdropFile.js'
+import downloadImage from './components/downloadImage.js'
+
+import Quad from './components/perspective.js'
 
 import composition from './_composition.js'
 import adjustments from './_adjustments.js'
 import curves from './_curves.js'
 import filters from './_filters.js'
+import perspective from './_perspective.js'
 
 const initstate = {
   appname:'MiNi PhotoEditor',
@@ -39,8 +43,10 @@ import './editor.css'
 //////////////////////////////////////////////////
 
 
+
 export function App(){ //this -- includes url and user
   store(initstate) //just for fun
+  let _exif
   const $file = reactive(false)
   const $canvas = reactive()
   const $selection = reactive()
@@ -53,35 +59,50 @@ export function App(){ //this -- includes url and user
       lights: { brightness:0, exposure:0, gamma:0, contrast:0, shadows:0, highlights:0, bloom:0, },
       colors: { temperature:0, tint:0, vibrance:0, saturation:0, sepia:0, },
       effects: { clarity:0, noise:0, vignette:0, },
-      curve: {curvearray: 0},
+      curve: {curvepoints: 0},
       filter: { opt:0, mix:0 },
+      perspective: {quad:0, modified:0}
     }
 
   ///// CORE FUNCTIONS
 
-    async function downloadImage(){
-      if(await confirm('Download image?')){
-        const meta = $file.value;
-        const img = _minigl.captureImage() //return Image with src=image/jpeg dataUrl
-        let imgdataurl =  img.src
-        if(meta.exif_raw) {
-          imgdataurl = writeEXIFtoJPG(meta,imgdataurl) //input jpeg dataUrl i.e. data:image/jpeg;base64,xxxx data:image/jpg;base64,xxx
-        }
-        const blob = await fetch(imgdataurl).then(r => r.blob());
-        let name = meta.file.name
-        if(!name.toLowerCase().endsWith('.jpeg') && !name.toLowerCase().endsWith('.jpg')) name+='.jpg'
-        downloadFile(blob,'__'+name);
-      }
-    }
-
     async function onImageLoaded(arrayBuffer, filedata, img){
         if($file.value) resetAll()
+        try{
+          _exif=await miniExif(arrayBuffer)
+        }catch(e){console.error(e)}
 
-        let meta = await readEXIF(arrayBuffer);
+        let meta=_exif?.read()
         if(!meta) meta={}
+        //const parser = new DOMParser();
+        //if(meta.xml) meta.xml = parser.parseFromString(meta.xml.slice(meta.xml.indexOf('<')), 'application/xml');
+        if(meta.xml) {
+          meta.xml = meta.xml.slice(meta.xml.indexOf('<')).replace(/ +(?= )/g,'').replace(/\r\n|\n|\r/gm,'')
+          /*
+          const tags={}
+          const s =  ['exif','exifEX','tiff','xmp','photoshop']
+          s.forEach(t=>{
+            const r = new RegExp(`<${t}:(.*?)>(.*?)</${t}`, "smig")
+            tags[t]={}
+            let match = r.exec(meta.xml)
+            while (match) {
+              console.log(match[2])
+              if(match[2].includes('rdf:li')){
+                let x=[]
+                match[2].matchAll(/\<rdf:li>(.*?)<\/rdf/gm).forEach(e=>x.push(e[1]))
+                match[2]=x
+              }
+              tags[t][match[1]]=match[2]
+              match = r.exec(meta.xml)
+            }
+          })
+          console.log(tags)
+          */
+        }
         meta.file = {...filedata, hsize:filesizeString(filedata.size), width:img?.width || img?.videoWidth || '-', height:img?.height || img?.videoHeight || '-'};
         meta.img = img;
         meta.colorspace = meta.icc?.ColorProfile?.[0].includes("P3") ? "display-p3" : "srgb"
+        //if(meta.format==='JXL') meta.colorspace="display-p3"
         console.log('metadata',{...meta});
         $file.value=meta;
     }
@@ -113,7 +134,7 @@ export function App(){ //this -- includes url and user
       }
     },{effect:true})
   
-    function updateGL(){
+    async function updateGL(){
       let flatparams = {}
       Object.keys(adj).forEach(e=>flatparams={...flatparams,...adj[e]}) //flatten the adj object
 
@@ -126,10 +147,20 @@ export function App(){ //this -- includes url and user
         adj.trs.angle-=adj.crop.canvas_angle        
       }
 
+      if(flatparams.quad) {
+        //console.log('perspective',flatparams.quad)
+        let before=[[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
+        //let before=[[0,0], [1,0], [1,1], [0,1]]
+        before = before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+        let after = flatparams.quad.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+        _minigl.filterPerspective(before,after, false, false)
+      }
+
       // RUN CROP when set (crop image after TRS but before other filters)
       if(adj.crop.glcrop) {
         _minigl.crop(adj.crop.glcrop)
         adj.crop.glcrop=0
+        adj.perspective.quad=0
         return updateGL()
       }
 
@@ -138,7 +169,7 @@ export function App(){ //this -- includes url and user
       if(flatparams.bloom) _minigl.filterBloom(flatparams.bloom)
       if(flatparams.noise) _minigl.filterNoise(flatparams.noise)
       if(flatparams.shadows||flatparams.highlights) _minigl.filterHighlightsShadows(flatparams.highlights||0,-flatparams.shadows||0)
-      if(flatparams.curvearray) _minigl.filterCurves(flatparams.curvearray)
+      if(flatparams.curvepoints) _minigl.filterCurves(flatparams.curvepoints)
       if(flatparams.opt) _minigl.filterInsta(flatparams.opt,flatparams.mix)
 
 
@@ -269,15 +300,33 @@ export function App(){ //this -- includes url and user
   ///// INFO
     async function showInfo(){
       const meta = $file._value //use _value otherwhise component below will become reactive!
-      await alert(
-        ()=>html`<small style="text-align:center;">
-          ${meta.file.name}<br>
-          ${meta.file.width} x ${meta.file.height} (${meta.file.hsize})<br>
-          ${meta.exif?.DateTimeOriginal?.value || new Date(meta.file.lastModified).toLocaleString()}<br>
-          ${meta.colorspace}
+      await alert(()=>html`
+          <div style="text-align:left;font-size:12px;max-height:50vh;overflow:auto;">
+            <div class="section">FILE</div>
+              <div>name: ${meta.file.name}</div>
+              <div>size: ${meta.file.width} x ${meta.file.height} (${meta.file.hsize})</div>
+              <div>date: ${meta.exif?.DateTimeOriginal?.value || new Date(meta.file.lastModified).toLocaleString('en-UK')}</div>
+              <div>prof: ${meta.colorspace}</div>
 
-          ${()=>meta.gps&&GPSMap([meta.gps.GPSLongitude.hvalue,meta.gps.GPSLatitude.hvalue])}
-        </small>`)
+            ${meta.tiff && html`<div class="section">TIFF</div>`}
+            ${meta.tiff && Object.entries(meta.tiff)
+                .sort((a,b)=>a[0]?.toString().localeCompare(b[0]?.toString()))
+                .map(e=>html`
+                  <div>${e[0]}: ${e[1].hvalue || e[1].value}</div>
+                `)}
+
+            ${meta.gps && html`<div class="section">GPS</div>`}
+            ${()=>meta.gps&&GPSMap([meta.gps.GPSLongitude.hvalue,meta.gps.GPSLatitude.hvalue])}
+
+            ${meta.exif && html`<div class="section">EXIF</div>`}
+            ${meta.exif && Object.entries(meta.exif)
+                .sort((a,b)=>a[0]?.toString().localeCompare(b[0]?.toString()))
+                .map(e=>html`
+                  <div>${e[0]}: ${e[1].hvalue || e[1].value}</div>
+                `)}
+
+          </div>`
+        ,400)
 
     }
   /////////////////
@@ -325,7 +374,7 @@ export function App(){ //this -- includes url and user
       handleCrop()
     }
 
-    function handleCrop(){
+    async function handleCrop(){
       if(!croprect) return //croprect is the DOM element with the crop size
       const ratio=canvas.width/crop.offsetWidth
       adj.crop.glcrop={
@@ -376,6 +425,7 @@ export function App(){ //this -- includes url and user
                 <div id="zoomable" @dblclick="${canvas_dblclick}" @click="${canvas_click}">
                   <div id="pannable">
                     <canvas :ref="${$canvas}" id="canvas" class="checkered"></canvas>
+                    ${()=>$selection.value==='perspective' && Quad(canvas, adj.perspective, updateGL)}
                     ${()=>$showsplit.value && SplitView(splitimage,canvas.style.width,canvas.style.height,splitwidth,onSplitUpdate)}                    
                     ${()=>$selection.value==='composition' && Cropper(canvas, adj.crop, adj.trs)}
                   </div>
@@ -387,7 +437,7 @@ export function App(){ //this -- includes url and user
                 <div>
                   <style>#clickdrop_btn{width: 120px;}</style>
                   ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded))}
-                  <button style="width:120px;" id="btn_download" @click="${downloadImage}">download</button>
+                  <button style="width:120px;" id="btn_download" @click="${()=>downloadImage($file,_exif,_minigl)}">download</button>
                 </div>
 
                 <div>
@@ -400,7 +450,10 @@ export function App(){ //this -- includes url and user
                 /******** COMPOSITION *******/
                 ${composition($selection,handleSelection,adj,updateGL,()=>_minigl,centerCanvas)}
 
-                /******** ADJUSTMENT *******/
+                /******** PERSPECTIVE *******/
+                /*${perspective($selection,handleSelection,adj.perspective,updateGL,()=>_minigl,centerCanvas)}*/
+
+                /******** ADJUSTMENTS *******/
                 ${adjustments($selection,handleSelection,adj,updateGL)}
 
                 /******** COLOR CURVE *******/

@@ -89,8 +89,8 @@ export default function filters($selection, handleSelection,  params,onUpdate){
   }
 
   return html`
-    <style>.btn_insta{width:70px;color: light-dark(white, #999);}</style>
-    <div class="section" id="filters">
+    <style>.btn_insta{width:70px;color: light-dark(white, white);}</style>
+    <div class="section" id="filters" :style="${()=>$selection.value==='filters'&&'height:235px;'}">
         <div style="display:flex;justify-content: space-between;cursor:pointer; color" @click="${()=>handleSelection('filters')}">
           <b>filters</b>
             <style type="text/css">@keyframes animate { 0.00% {animation-timing-function: cubic-bezier(0.51,0.03,0.89,0.56);transform: translate(0.00px,0.00px) rotate(0.00deg) scale(1.00, 1.00) skew(0deg, 0.00deg) ;opacity: 1.00;}52.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(211.13deg) ;}100.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(360.00deg) ;} }</style>

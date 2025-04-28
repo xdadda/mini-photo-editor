@@ -5,3 +5,7 @@
 .clrspace.selected{
   border: 3px solid;
 }
+
+button:focus.clrspace.selected{
+  border-color: inherit;
+}

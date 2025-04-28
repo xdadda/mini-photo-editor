@@ -10,10 +10,10 @@ export default function adjustments($selection, handleSelection,  adj, onUpdate)
       const id = this.id.split('_')
       adj[id[0]][id[1]]=parseFloat(value)
       this.nextElementSibling.textContent=value
+
       onUpdate()
       //debounce(pushHistory,500)
-      const el=document.getElementById('btn_reset_'+id[0])
-      if(el) el.removeAttribute('disabled')
+      updateResetBtn(id[0])
     }
 
     function setAdjCtrl(_id){
@@ -31,11 +31,7 @@ export default function adjustments($selection, handleSelection,  adj, onUpdate)
       setAdjCtrl(this.id)
       onUpdate()
       //debounce(pushHistory,500)
-      //if all section's adjustments are set to 0 disable reset
-      if(Object.values(adj[id[0]]).reduce((p,v)=>p+=v,0)===0){
-        const el=document.getElementById('btn_reset_'+id[0])
-        if(el) el.setAttribute('disabled',true)
-      }
+      updateResetBtn(id[0])
     }
 
     function resetSection(section){
@@ -46,15 +42,31 @@ export default function adjustments($selection, handleSelection,  adj, onUpdate)
         })
         onUpdate()
       }
+      updateResetBtn(section)
+    }
+
+    function updateResetBtn(section){
+      //if all section's adjustments are set to 0 disable reset
       const el=document.getElementById('btn_reset_'+section)
-      if(el) el.setAttribute('disabled',true)
+      if(Object.values(adj[section]).reduce((p,v)=>p+=v,0)===0){
+        if(el) el.setAttribute('disabled',true)
+      }
+      else {
+        if(el) el.removeAttribute('disabled')
+      }
+
     }
   /////////////////
 
+  const heights={
+    lights:190,
+    colors:150,
+    effects:105
+  }
 
   return html`
     ${['lights','colors','effects'].map(s=>html`
-      <div class="section" id="${s}">
+      <div class="section" id="${s}" :style="${()=>$selection.value===s&&`height:${heights[s]}px;`}">
         <div style="display:flex;justify-content: space-between;cursor:pointer;" @click="${()=>handleSelection(s)}">
           <b>${s}</b><a id="btn_reset_${s}" class="reset_btn" @click="${()=>resetSection(s)}" disabled title="reset">\u00D8</a>
         </div>

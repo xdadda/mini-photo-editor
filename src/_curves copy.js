@@ -5,30 +5,26 @@ export default function curves($selection, handleSelection,  params,onUpdate){
 
   ///// COLOR CURVE
     let curve = {
-      space:0, //0=all, 1=R, 2=G, 3=B,
-      numpoints:5,
-      curvepoints: null, //[ [[x,y],...], null, null, null ]
-      modifiedflag: null, //for each colorspace indicates if curve is reset/linear 
-      resetFn: null,
+      space:0, //0=all, 1=R, 2=G, 3=B
+      curvearray:[null,null,null,null],
+      reset:null,
     }
 
-    function setCurve(_curvepoints, _curvemodified){
-      //just record modified arrays
-      curve.curvepoints = _curvemodified.map((e,i)=>e&&_curvepoints[i])
-
-      //update resetBtn
-      if(curve.curvepoints.reduce((p,v)=>p+=v,0) === 0){
+    function setCurve(curvearray){
+      //if all arrays are null disable reset btn
+      if(curvearray.reduce((p,v)=>p+=v,0) === 0 || curvearray===0){
         btn_reset_curve?.setAttribute('disabled',true)
+        curvearray=0
       } 
       else btn_reset_curve?.removeAttribute('disabled')
-
-      params.curvepoints = curve.curvepoints
+      params.curvearray = curvearray
       onUpdate()
     }
 
     function resetCurve(){
-      if(!curve.resetFn) return
-      curve.resetFn()
+      if(!curve.reset) return
+      curve.reset()
+      setCurve(curve.curvearray)
     }
   /////////////////
 

@@ -1,6 +1,6 @@
 {
   "name": "mini_editor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "type": "module",
   "scripts": {
@@ -11,9 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@xdadda/mini": "^0.2.5",
-    "@xdadda/mini-exif": "^0.1.0",
-    "@xdadda/mini-gl": "^0.1.0"
+    "@xdadda/mini": "^0.2.10",
+    "@xdadda/mini-exif": "^0.2.0",
+    "@xdadda/mini-gl": "^0.1.6"
   },
   "devDependencies": {
     "rollup-plugin-minify-template-literals": "^1.1.7",

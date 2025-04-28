@@ -42,7 +42,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         flipv.removeAttribute('selected')
 
         resetCropRect()
-        toggleResetComposition()
+        updateResetBtn()
         //showCrop()
         onUpdate()
     }
@@ -69,7 +69,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         if(adj.trs.fliph) fliph.setAttribute('selected',true) 
         else fliph.removeAttribute('selected')
       }
-      toggleResetComposition()
+      updateResetBtn()
       onUpdate()
     }
 
@@ -98,11 +98,11 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
       crop.style.height = Math.round(canvas.getBoundingClientRect().height)+'px'
       croprect.style.inset='0'
 
-      toggleResetComposition()
+      updateResetBtn()
       onUpdate()
     }
 
-    function toggleResetComposition(){      
+    function updateResetBtn(){      
       if(Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 ) btn_reset_comp.setAttribute('disabled',true)
       else btn_reset_comp.removeAttribute('disabled')
     }
@@ -118,7 +118,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         aspects.querySelector('[selected]')?.removeAttribute('selected')
         aspects.querySelector('#ar_'+idx)?.setAttribute('selected',true)     
       }
-      toggleResetComposition()
+      updateResetBtn()
     }
   /////////////////
 
@@ -135,7 +135,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         const newheight=canvas.width*Math.sin(rad)+canvas.height*Math.cos(rad)
         const zoom=Math.max(newwidth/canvas.width-1, newheight/canvas.height-1)
         adj.trs.scale=zoom
-        toggleResetComposition()
+        updateResetBtn()
         //setAdjCtrl('trs_scale')
       }
       onUpdate()
@@ -160,7 +160,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
         adj.trs.scale=0
       }
       
-      toggleResetComposition()
+      updateResetBtn()
       onUpdate()
     }
   /////////////////
@@ -169,13 +169,15 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
     <style>
       .crop_btn {
         width: 38px;
-        color: light-dark(white,#999);
+        color: light-dark(black,white);
         padding: 0;
         margin: 2px;
         border-radius:50%;
+        fill: white;
+        stroke: white;
       }
     </style>
-    <div class="section" id="composition">
+    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:170px;'}">
         <div style="display:flex;justify-content: space-between;cursor:pointer;" @click="${()=>handleSelection('composition')}">
           <b>composition</b><a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
         </div>

@@ -19,6 +19,7 @@ a:visited { color:inherit; }
 a[disabled] { color:grey; }
 
 button, .btn {
+  outline: none;
   border-radius: 8px;
   border: 1px solid transparent;
   font-size: 1em;
@@ -29,28 +30,57 @@ button, .btn {
   height: 40px;
   margin: 5px;
   width: 150px;
+  opacity: 0.8;
 }
-button[selected]{
-  border-color:darkorange;
-  filter: brightness(0.8);
-}
-
-
+  button[selected]{
+    border-color:darkorange;
+    opacity: 1;
+  }
+  button:focus{
+    /*border-color:rgba(255, 140, 0, 0.7) !important;*/
+    opacity: 1;
+  }
 
 a:hover, button:hover, .btn:hover {
   outline:none;
-  border-color: darkorange;
+  border-color: rgba(255, 140, 0, 0.6);
 }
 
-input {
+input, select{
+  appearance: none;
+  outline: none;
   border-style:solid;
+  border-radius:7px;
   border-width:1px;
-  border-radius: 3px; 
   border-color:transparent;
-  border-bottom-color:lightgrey;
-  border-bottom-width:2px;
   padding: 5px;
   background: transparent;
+  opacity: 0.8;
+}
+    input:hover, select:hover {
+      border-color:rgba(255, 140, 0, 0.6);
+      opacity: 1;
+    }
+    input:focus {
+      border-color:rgba(255, 140, 0, 0.7) !important;
+      opacity: 1;
+    }
+
+select {
+  background-image: url(./assets/ui_downarrow.svg);
+  background-size: 8px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - .35em) center;
+  cursor: pointer;
+}
+
+input[type='range'] {
+  appearance: none;
+  cursor: pointer;
+  border: 0;
+  height: 4px;
+  padding: 0;
+  flex: 1;
 }
 
 
@@ -65,7 +95,7 @@ input {
 
 .alert-message{
   color: light-dark(rgba(0, 0, 0, 0.87),rgba(255, 255, 255, 0.87));
-  background-color: light-dark(#e0e0e0,#121212);    
+  background-color: light-dark(#e0e0e0,#191919);    
 }
 
 
@@ -95,14 +125,17 @@ input {
 
 #root {
   color: light-dark(#213547,rgba(255, 255, 255, 0.87));
-  background-color: light-dark(#ffffff,#121212);
+  background-color: light-dark(#ffffff,#191919);
 }
   
 button, .btn {
-  background-color: light-dark(#b6b5b5,#303030);
+  background-color: light-dark(#b6b5b5,#353535);
 }
-input {
+input, select {
   background-color: light-dark(#edecec,#303030);
+}
+input[type='range'] {
+  background-color: light-dark(#bbbbbb, #303030);
 }
 hr {
   border: 1px solid;
