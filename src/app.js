@@ -1,4 +1,3 @@
-//TODO: 
 
 import { html, reactive, onMount, onUnmount} from 'mini'
 import { alert } from 'mini/components'

@@ -72,9 +72,9 @@ export default async function downloadImage($file,_exif,_minigl){
         if(currentExifData) {
           //insert original exif data
           _newexif.replace(currentExifData)
-          //patch orientation to match canvas
+          //patch orientation to match canvas (if present in tiff!)
           //[Note: some HEIC viewers don't use EXIF Orientation but HEIC 'irot' data! ]
-          _newexif.patch({area:'tiff',field:'Orientation',value:1})          
+          if(meta?.tiff?.Orientation) _newexif.patch({area:'tiff',field:'Orientation',value:1})          
         }
         _newexif.download(newfilename.value)
       }
