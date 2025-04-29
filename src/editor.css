@@ -187,6 +187,18 @@ input[type=range]::-moz-range-thumb {
   background-color: gray;
 }
 
+input[type=number].rangenumb {
+  padding:0px;
+  text-align: right;
+  width:50px;
+  color:gray;
+}
+
+.rangelabel {
+  width:100px;
+  text-align:left;
+  color:gray;
+}
 
 
 

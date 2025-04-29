@@ -145,7 +145,12 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
       const value = e.target.value
       const id = this.id.split('_')
       adj[id[0]][id[1]]=parseFloat(value)
-      this.nextElementSibling.textContent=value
+      if(id.length===3){//it's the number input
+        this.previousElementSibling.value=value
+      }
+      else {//it's the range input
+        this.nextElementSibling.value=value
+      }
 
       if(id[1]==='angle'){
         const rad = parseFloat(Math.abs(value)) * Math.PI / 180.0
@@ -165,7 +170,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
       if(!el) return
       const id = _id.split('_')
       el.value=adj[id[0]][id[1]]
-      el.nextElementSibling.textContent=el.value
+      el.nextElementSibling.value=el.value
     }
 
     function resetTRSCtrl(){
@@ -229,7 +234,7 @@ export default function composition($selection, handleSelection,  adj, onUpdate,
             <div style="display:flex;justify-content: space-around;align-items: center;">
               <label style="width:100px;text-align:left;color:gray;">rotate</label>
               <input id="trs_angle" style="width:130px;" type="range" value="${adj['trs']['angle']}" min=-45 max=45 step=0.25 @input="${setTRS}" @dblclick="${resetTRSCtrl}"/>
-              <span style="width:40px;text-align:right;color:gray;">${adj['trs']['angle']}</span>
+              <input id="trs_angle_" type="number" class="rangenumb" step=0.25 min=-45 max=45 value="${adj['trs']['angle']}" @input="${setTRS}">
             </div>
 
             <div style="display:flex;justify-content: flex-end;color:grey; margin-right: 3px;">
