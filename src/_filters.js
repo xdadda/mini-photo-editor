@@ -60,6 +60,7 @@ export default function filters($selection, handleSelection,  params,onUpdate){
       selection=false
       //previewFilter.call(this)
       params.opt=0
+      onUpdate()
     }
   }
 
