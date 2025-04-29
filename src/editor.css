@@ -194,6 +194,20 @@ input[type=number].rangenumb {
   color:gray;
 }
 
+/* hide step buttons on Chrome/Safari*/
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    opacity: 0;
+}
+input[type=number]:focus::-webkit-inner-spin-button,
+input[type=number]:focus::-webkit-outer-spin-button,
+input[type=number]:hover::-webkit-inner-spin-button,
+input[type=number]:hover::-webkit-outer-spin-button {
+    opacity: 1;
+}
+
+
+
 .rangelabel {
   width:100px;
   text-align:left;
