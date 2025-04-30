@@ -13,7 +13,7 @@ import icon_shutter_rotate from './assets/icon_shutter_rotate.svg?raw'
     {type:'1',label:'reyes', map1: async()=> import('./assets/LUT/LUT_reyes.png')},
     {type:'MTX',label:'polaroid', mtx: 'polaroid'},
     {type:'MTX',label:'kodak', mtx: 'kodachrome'},
-    {type:'MTX',label:'greeni', mtx: 'greeni'},
+    {type:'MTX',label:'browni', mtx: 'browni'},
     {type:'MTX',label:'vintage', mtx: 'vintage'},
   ]
 

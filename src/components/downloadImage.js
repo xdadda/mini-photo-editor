@@ -43,7 +43,7 @@ export default async function downloadImage($file,_exif,_minigl){
                   <div style="display:flex;flex-direction:column;font-size:14px;">
                     <div>
                       <div style="font-size:10px;color:gray;">File Name</div>
-                      <input style="width:225px;font-size:14px;" type="text" :value="${()=>newfilename.value}">
+                      <input style="width:225px;font-size:14px;" type="text" :value="${()=>newfilename.value}" @change="${(e=>newfilename.value=e.target.value)}">
                       <select style="width:60px;height:29px;font-size:14px;" @change="${handleSelect}">
                         <option value='jpeg' selected>jpeg</option>
                         <option value='png'>png</option>

@@ -6,7 +6,7 @@ import store from 'mini/store' //'./store.js'
 
 import miniExif from 'mini-exif'
 import { minigl} from 'mini-gl'
-import logo from '/icon.png'
+import logo from './assets/icon.png'
 import github from './assets/icon_github.png'
 
 import { zoom_pan } from './js/zoom_pan.js'
@@ -38,8 +38,7 @@ import './editor.css'
 //////////////////////////////////////////////////
 
 
-
-export function App(){ //this -- includes url and user
+export function App(){
   store(initstate) //just for fun
   let _exif
   const $file = reactive(false)
@@ -58,6 +57,39 @@ export function App(){ //this -- includes url and user
       filter: { opt:0, mix:0 },
       perspective: {quad:0, modified:0}
     }
+
+  ///// INPUT FUNCTION (for future integrations)
+    //@input: Image, Blob, ArrayBuffer, url  it's an image feeded programmatically
+    async function openInput(input, name){
+      if(!input) return
+      let arrayBuffer, blob, img, info={name}
+      if(typeof input === 'string' && input.startsWith('http')) {
+        const resp = await fetch(input)
+        arrayBuffer = await resp.arrayBuffer()
+      }
+      else if(input instanceof Image) {
+        const resp = await fetch(input.src)
+        arrayBuffer = await resp.arrayBuffer()
+        img=input
+      }
+      else if(input instanceof ArrayBuffer) {
+        arrayBuffer = input
+      }
+      else if(input instanceof Blob) {
+        blob=input
+        arrayBuffer = await input.arrayBuffer()
+      }
+      else return console.error('Unknown input type')
+      info.size=arrayBuffer.byteLength
+
+      if(!blob) blob = new Blob( [ arrayBuffer ] )
+      if(!img) {
+        img = new Image();
+        await new Promise((r,j) => {img.onload=r; img.onerror=j; img.src=URL.createObjectURL(blob); })        
+      }
+      onImageLoaded(arrayBuffer, info, img)
+    }
+  /////////////////
 
   ///// CORE FUNCTIONS
 
@@ -135,8 +167,8 @@ export function App(){ //this -- includes url and user
 
       _minigl.loadImage() //load image's texture
 
-
-
+      
+      
       // TRANSLATE/ROTATE/SCALE filter
       if(cropping || adj.crop.glcrop){
         adj.trs.angle+=adj.crop.canvas_angle
@@ -161,17 +193,14 @@ export function App(){ //this -- includes url and user
       }
 
 
-
-
       // other filters
       _minigl.filterAdjustments({...flatparams})
       if(flatparams.bloom) _minigl.filterBloom(flatparams.bloom)
       if(flatparams.noise) _minigl.filterNoise(flatparams.noise)
       if(flatparams.shadows||flatparams.highlights) _minigl.filterHighlightsShadows(flatparams.highlights||0,-flatparams.shadows||0)
       if(flatparams.curvepoints) _minigl.filterCurves(flatparams.curvepoints)
-      if(flatparams.opt) _minigl.filterInsta(flatparams.opt,flatparams.mix)
-
-
+      if(flatparams.opt) _minigl.filterInsta(flatparams.opt,flatparams.mix)      
+      
       _minigl.paintCanvas()  //draw to canvas
       if(updateHistogram) updateHistogram()
     } 
@@ -402,22 +431,29 @@ export function App(){ //this -- includes url and user
     }
 
     function openSample(){
-      fetch( this.src )
-        .then( r => r.arrayBuffer() )
-        .then( async (buffer) => {
-          // there is no buffer.data here
-          const blob = new Blob( [ buffer ] );
-          const img = new Image();
-          await new Promise((r,j) => {img.onload=r; img.onerror=j; img.src=URL.createObjectURL(blob); })
-          onImageLoaded(buffer, {name:this.id,size:buffer.byteLength}, img)
-          //quick hack to close the window
-          root.lastElementChild.remove()
-        } );
+      openInput(this.src, this.id)
+      //quick hack to close the samples window
+      root.lastElementChild.remove()
     }
 
   ///////////////// 
 
-
+  /*
+    function test(){
+      const b = _minigl.readPixels()
+      const pixels = []
+      let diff=0
+      for(let i=0; i<256; i++){
+        let pixel = b[i*4]
+        if(pixel!==i) {
+          pixel+='*'
+          diff++
+        }
+        pixels.push(pixel)
+      }
+      console.log(diff,pixels)
+    }
+  */
 
   return html`
     <div class="app">
