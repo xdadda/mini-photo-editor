@@ -1,6 +1,7 @@
 import { render, html, reactive, onMount } from 'mini'
 import icon_rotate from './assets/icon_rotate.svg?raw'
 import icon_flip from './assets/icon_flip.svg?raw'
+import icon_skew from './assets/icon_skew.svg?raw'
 
 import Quad from './components/perspective.js'
 
@@ -10,6 +11,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
   let prevselection
 
   reactive(()=>{
+
     if($selection.value==='composition'){
       _minigl=get_minigl()
       _minigl.resetCrop() //resetCrop will restore original/ resized image size
@@ -17,30 +19,33 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
       //get current aspect ratio and save it in the pic - 1/pic AR settings
       arsvalues[1]=_minigl.gl.canvas.width/_minigl.gl.canvas.height
       arsvalues[2]=1/arsvalues[1]
-
-      //rescale image if needed
-      /*
-      if(adj.resizer.width) {
-        canvas.width=adj.resizer.width
-        canvas.height=adj.resizer.height
-      }
-      */
-
       updateCanvasAngle()
       onUpdate()
       prevselection=$selection.value
-      //updateResetBtn()
     }
     else {
       if(prevselection==='composition') {
-        //updateResetBtn()
         hidePerspective()
         prevselection=undefined
+        handleCrop()
       }
     }
   },{effect:true})
 
-
+    async function handleCrop(){
+      const params=adj
+      if(!croprect) return //croprect is the DOM element with the crop size
+      crop.style.display='' //if it was hidden by perspective
+      const ratio=canvas.width/crop.offsetWidth
+      params.crop.glcrop={
+        left:Math.round((croprect.offsetLeft)*ratio),
+        top:Math.round((croprect.offsetTop)*ratio),
+        width:Math.round((croprect.offsetWidth)*ratio),
+        height:Math.round((croprect.offsetHeight)*ratio)
+      }
+      onUpdate()
+      centerCanvas()
+    }
 
   ///// CROP
   
@@ -112,6 +117,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
     const ars=['free','pic','1:pic','1:1','4:3','16:9','3:4','9:16']
     let arsvalues=[0,0,0,1,4/3,16/9,3/4,9/16]
     function setCropAR(idx){
+      hidePerspective()
       adj.crop.arindex=idx
       adj.crop.ar=arsvalues[idx]
       if(croprect) croprect.style.aspectRatio=arsvalues[idx]
@@ -159,10 +165,10 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
       const id = this.id.split('_')
       adj[id[0]][id[1]]=parseFloat(value)
       if(id.length===3){//it's the number input
-        this.previousElementSibling.value=value
+        this.nextElementSibling.value=value
       }
       else {//it's the range input
-        this.nextElementSibling.value=value
+        this.previousElementSibling.value=value
       }
 
       if(id[1]==='angle'){
@@ -183,7 +189,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
       if(!el) return
       const id = _id.split('_')
       el.value=adj[id[0]][id[1]]
-      el.nextElementSibling.value=el.value
+      el.previousElementSibling.value=el.value
     }
 
     function resetTRSCtrl(){
@@ -206,7 +212,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
     let perspel
     async function showPerspective(){
       persp.value=true
-      perspel = await render(plcquad,()=>Quad(canvas,adj,()=>{updateResetBtn();onUpdate()}))
+      perspel = await render(plcquad,()=>Quad(canvas,adj.perspective,()=>{updateResetBtn();onUpdate()}))
       crop.style.display='none'
     }
     function hidePerspective(){
@@ -238,7 +244,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
       onUpdate()
     }
 
-
     function resetResizer(){
       _minigl.resetResize()
       adj.resizer.width=0
@@ -266,7 +271,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
     <style>
       .crop_btn {
         width: 38px;
-        color: light-dark(black,white);
+        color: white;
         padding: 0;
         margin: 2px;
         border-radius:50%;
@@ -274,46 +279,45 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
         stroke: white;
       }
     </style>
-    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:350px;'}">
+    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:235px;'}" :selected="${()=>$selection.value==='composition'}">
         <div class="section_header" @click="${()=>$selection.value = 'composition'}">
           <b class="section_label">composition</b>
           <a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
         </div>
 
-        <div class="section_container" >
           ${()=>$selection.value==='composition' && html`
+            <button style="position: absolute;top: 7px;right: 25px;height: 20px;width: 100px;padding: 0;background: darkorange;" @click="${()=>$selection.value=''}">done</button>
             <hr>
-                <div style="display:flex;justify-content: space-around;align-items: center;">
-                  <label style="width:100px;text-align:left;color:gray;">rotation</label>
-                  <input id="trs_angle" style="width:130px;" type="range" value="${adj['trs']['angle']}" min=-45 max=45 step=0.25 @input="${setTRS}" @dblclick="${resetTRSCtrl}"/>
-                  <input id="trs_angle_" type="number" class="rangenumb" step=0.25 min=-45 max=45 value="${adj['trs']['angle']}" @input="${setTRS}">
+              <div style="display:flex;justify-content: flex-end;color:grey; margin-right: 3px;">
+                <div style="flex: 1; align-content: center; text-align: left;">
+                  <span>rotation </span>
+                  <input id="trs_angle_" style="width:75px;" type="number" class="rangenumb" step=0.25 min=-45 max=45 value="${adj['trs']['angle']}" @input="${setTRS}">
+                  <input id="trs_angle" type="range" value="${adj['trs']['angle']}" min=-45 max=45 step=0.25 @input="${setTRS}" @dblclick="${resetTRSCtrl}"/>
+
                 </div>
 
-              <div style="display:flex;justify-content: flex-end;color:grey; margin-right: 3px;">
                 <button id="fliph" class="crop_btn" title="flip x" selected="${!!adj.trs.fliph}" @click="${()=>flip('h')}">${icon_flip}</button>
                 <button id="flipv" class="crop_btn" title="flip y" selected="${!!adj.trs.flipv}" @click="${()=>flip('v')}" style="rotate: 270deg;">${icon_flip}</button>
                 <button class="crop_btn" title="rotate left" @click="${()=>rotateCanvas(-90)}">${icon_rotate}</button>
-
+                <button class="crop_btn" title="perspective" :selected="${()=>!!persp.value}" @click="${togglePerspective}">${icon_skew}</button>
               </div>
             <hr>
-              <div style="text-align:left;">crop ratio</div>
+              <div style="text-align:left;color:gray;">crop ratio</div>
               <div style="text-align:left;" id="aspects">
                 ${ars.map((e,i)=>html`
                   <button id="ar_${i}" @click="${()=>setCropAR(i)}" class="crop_btn" selected="${i===adj.crop.arindex }" @dblclick="${resetCropRect}">${e}</button>
                 `)}
               </div>
             <hr>
-              <div style="text-align:left;">image size</div>
+              <div style="text-align:left;color:gray;">image size</div>
               <div style="display:flex;justify-content: space-around;align-items: center;">
-                <label style="width:100px;text-align:left;color:gray;">(${()=>resizeperc.value+'%'})</label>
+                <div style="width:100px;text-align:left;color:gray;">(${()=>resizeperc.value+'%'})</div>
                 <input id="resize_width" type="number" value="${canvas.width}" style="text-align:center;width:90px;" @change="${setWidth}"> 
                 x 
                 <input id="resize_height" type="number" value="${canvas.height}" style="text-align:center;width:90px;" @change="${setHeight}">
               </div>
-            <hr>
-              <button :selected="${()=>!!persp.value}" @click="${togglePerspective}">perspective</button>
+              
           `}
-         </div>
     </div>
 
   `

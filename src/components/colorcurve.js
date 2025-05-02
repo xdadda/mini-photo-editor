@@ -1,5 +1,4 @@
 import { html, reactive, onMount, onUnmount} from 'mini'
-//import Spline from 'cubic-spline'
 import {Spline} from 'mini-gl'
 import './colorcurve.css'
 

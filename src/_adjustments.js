@@ -24,13 +24,13 @@ export default function adjustments($selection, params, onUpdate){
     function updateResetBtn(section){
       //if all section's params are set to 0 disable reset
       const el=document.getElementById('btn_reset_'+section)
+      if(!el) return
       if(Object.values(params[section]).reduce((p,v)=>p+=v,0)===0){
-        if(el) el.setAttribute('disabled',true)
+        el.setAttribute('disabled',true)
       }
       else {
-        if(el) el.removeAttribute('disabled')
+        el.removeAttribute('disabled')
       }
-
     }
   /////////////////////////////
 
@@ -79,7 +79,7 @@ export default function adjustments($selection, params, onUpdate){
                       ${Object.keys(params[secname]).filter(e=>!e.startsWith('$')).map(e=>html`
                           /* RANGE INPUTS */
                           <div style="display:flex;justify-content: space-around;align-items: center;">
-                            <label class="rangelabel">${e}</label>
+                            <div class="rangelabel">${e}</div>
                             <input id="${secname+'_'+e}"      type="range"  style="width:130px;"  value="${params[secname][e]}" min=-1 max=1 step=0.01 @input="${setParam}" @dblclick="${resetParamCtrl}">
                             <input id="${secname+'_'+e+'_'}"  type="number" class="rangenumb"     value="${params[secname][e]}" min=-1 max=1 step=0.01 @input="${setParam}">
                           </div>

@@ -3,44 +3,44 @@ import './splitview.css'
 
 export default function SplitView(image, stylewidth, styleheight, splitwidth, onUpdate) {
 
-  onMount(()=>{
-    resetSplitRect(splitwidth)    
-    splitview_container.addEventListener("pointerdown", dragstart);
-    splitview_container.addEventListener("pointermove", drag);
-    splitview_container.addEventListener("pointerup", dragstop);
-  })
+    onMount(()=>{
+      resetSplitRect(splitwidth)    
+      splitview_container.addEventListener("pointerdown", dragstart);
+    })
 
-  onUnmount(()=>{
-    splitview_container.removeEventListener("pointerdown", dragstart);
-    splitview_container.removeEventListener("pointermove", drag);
-    splitview_container.removeEventListener("pointerup", dragstop);    
-  })
+    onUnmount(()=>{
+      splitview_container.removeEventListener("pointerdown", dragstart);
+    })
 
-  function resetSplitRect(splitw){
-    if(!splitw) splitwidth=0.5
+    function resetSplitRect(splitw){
+      if(!splitw) splitwidth=0.5
 
-    splitview.src=image.src
-    splitview.width=image.width
-    splitview.height=image.height
-    splitview_container.style.width=stylewidth
-    splitview_container.style.height=styleheight
-    splitview_container.style.aspectRatio='auto '+image.width+'/'+image.height
-    splitview.style.clipPath=`inset(0px ${(1-splitwidth)*100}% 0px 0px)`
-    splitview_bar.style.left=`calc(${(splitwidth)*100}% - 5px)`
+      splitview.src=image.src
+      splitview.width=image.width
+      splitview.height=image.height
+      splitview_container.style.width=stylewidth
+      splitview_container.style.height=styleheight
+      splitview_container.style.aspectRatio='auto '+image.width+'/'+image.height
+      splitview.style.clipPath=`inset(0px ${(1-splitwidth)*100}% 0px 0px)`
+      splitview_bar.style.left=`calc(${(splitwidth)*100}% - 5px)`
 
-  }
+    }
 
     let dragging=false, _x
     
     function dragstart(e){
       dragging=true
       splitview_container.setPointerCapture(e.pointerId)
+      splitview_container.addEventListener("pointermove", drag);
+      splitview_container.addEventListener("pointerup", dragstop);
       _x=e.clientX
     }
     
     function dragstop(e){
       dragging=false
       splitview_container.releasePointerCapture(e.pointerId)
+      splitview_container.removeEventListener("pointermove", drag);
+      splitview_container.removeEventListener("pointerup", dragstop);
       if(onUpdate) onUpdate(splitwidth)
     }
 

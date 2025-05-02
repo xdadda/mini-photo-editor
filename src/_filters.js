@@ -1,4 +1,4 @@
-import { html} from 'mini'
+import { html, reactive } from 'mini'
 import icon_shutter_rotate from './assets/icon_shutter_rotate.svg?raw'
 
 import section from './__section.js'
@@ -29,9 +29,9 @@ import section from './__section.js'
 
 export default function filters($selection, _params, onUpdate){
   const params=_params.filters
+  let selected=reactive(false)
 
   async function setFilter(id){
-      id=id.replace('flt_','')
       let t = setTimeout(()=>loader.style.display='',20) //show loader only if it's taking more than 20ms
       const _f=filtersLUT[parseInt(id)]
       if(_f.map1 && typeof _f.map1==='function') _f.map1=await loadFilterLUT((await _f.map1()).default)
@@ -41,41 +41,26 @@ export default function filters($selection, _params, onUpdate){
       params.opt={type,mtx,map1,map2,label}
       if(t) clearTimeout(t)
       loader.style.display='none'
-
   }
 
-  let selection=false
-  async function selectFilter(){
-    const el = document.getElementById(this.id)
-    //preview=false
-    if(!selection || selection!==this.id){
+  async function selectFilter(idx){
+    if(selected.value!==idx){
       //select
-      filters_content.querySelector('[selected]')?.removeAttribute('selected');
-      el.setAttribute('selected',true)
+      selected.value=idx
       btn_reset_filters?.removeAttribute('disabled')
-      selection=this.id
-      await setFilter(this.id)
+      await setFilter(idx)
       onUpdate()
     } 
     else {
       //deselect
-      el.removeAttribute('selected')
-      btn_reset_filters?.setAttribute('disabled',true)
-      selection=false
-      //previewFilter.call(this)
-      params.opt=0
-      onUpdate()
+      resetFilters()
     }
   }
 
-
   function resetFilters(){
-    const instafilters=document.getElementById('filters_content')
     btn_reset_filters?.setAttribute('disabled',true)
-    instafilters?.querySelector('[selected]')?.removeAttribute('selected');
+    selected.value=false
     params.opt=0
-    selection=false
-    //preview=false
     onUpdate()
   }
 
@@ -93,7 +78,7 @@ export default function filters($selection, _params, onUpdate){
       ()=>html`<div >
               <div id="loader" style="width:23px;fill: orange;display:none;position:absolute;top:-30px;">${icon_shutter_rotate}</div>
               ${filtersLUT.map((f,idx)=>html`
-                <button class="btn_insta" id="flt_${idx}" @click="${selectFilter}" selected="${params.opt?.label===f.label}">${f.label}</button>
+                <button class="btn_insta" @click="${()=>selectFilter(idx)}" :selected="${()=>selected.value===idx}">${f.label}</button>
                 `)}            
           </div>`
       )}

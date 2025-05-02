@@ -57,21 +57,22 @@
   margin: 2px 0;
   font-size:14px;
   height: 23px;
-  transition: height 0.2s;
-      overflow: hidden;
-
+  transition: height .3s;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
 }
     .section:hover {
-      background-color: light-dark( #edebeb, #292929);
+      background-color: light-dark( #ededed, #292929);
     }
     .section b{
       color:gray;
     }
-    .section[s_selected] b{
+    .section[selected] b{
       color:darkorange;
     }
-    .section[s_selected] {
-      background-color: light-dark( #edebeb, #292929);
+    .section[selected] {
+      background-color: light-dark( #d4d4d4, #292929);
     }
     .section[skipped] {
       opacity: 0.5;
@@ -81,11 +82,6 @@
       display:flex;
       justify-content: space-between;
       cursor:pointer;
-    }
-    .section .section_container{
-      overflow: hidden;
-      height: 100%;
-      color: grey;
     }
 
     .section .section_skip {

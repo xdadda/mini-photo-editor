@@ -32,20 +32,18 @@ export default function section(sectionname, height, $selection, params, onUpdat
     }
 
   return html`
-    <div class="section" id="${sectionname}" :style="${()=>$selection.value===sectionname&&`height:${height}px;`}">
+    <div class="section" id="${sectionname}" :style="${()=>$selection.value===sectionname&&`height:${height}px;`}" :selected="${()=>$selection.value===sectionname}">
         <div class="section_header" @click="${()=>$selection.value=sectionname}">
           <a id="btn_skip_${sectionname}" class="section_skip" @click="${handleSkipSection}" title="toggle">\u2609</a>
           <b class="section_label">${sectionname}</b>
           <a id="btn_reset_${sectionname}" class="reset_btn" @click="${resetSection}" disabled title="reset">\u00D8</a>
         </div>
 
-        <div class="section_container" >
-          ${()=>$selection.value===sectionname && html`
-            <div id="${sectionname}_content" class="${params[sectionname]?.$skip?'skip':''}" style="position:relative;">
-              <hr>
-              ${sectionComponent}
-            </div>
-          `}
-        </div>
+        ${()=>$selection.value===sectionname && html`
+          <div id="${sectionname}_content" class="${params[sectionname]?.$skip?'skip':''}" style="position:relative;">
+            <hr>
+            ${sectionComponent}
+          </div>
+        `}
     </div>`
 }

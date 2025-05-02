@@ -125,7 +125,12 @@ input, select{
   
 button, .btn {
   background-color: light-dark(#b6b5b5,#353535);
+  color:white;
 }
+button:disabled, .btn:disabled {
+    color: light-dark(rgba(16, 16, 16, 0.3), rgba(255, 255, 255, 0.3));
+}
+
 input, select {
   background-color: light-dark(#edecec,#303030);
 }

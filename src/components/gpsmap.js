@@ -24,9 +24,9 @@ export default function GPSMap(coord){
     )
 
     return html`
-          <style>#map{height: 180px;width:180px;color:black;border-radius: 15px;margin:10px auto;}</style>
-          <style>.maplibregl-ctrl-attrib{display:none;}</style>
-          <div id="map"></div>
+      <style>#map{height: 180px;width:180px;color:black;border-radius: 15px;margin:10px auto;}</style>
+      <style>.maplibregl-ctrl-attrib{display:none;}</style>
+      <div id="map"></div>
     `
   }
 ////////////////////////////////////////

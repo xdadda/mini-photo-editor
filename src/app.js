@@ -41,13 +41,10 @@ import './editor.css'
 export function App(){
   store(initstate)
 
-  let _exif
+  let _exif, _minigl, zp
   const $file = reactive(false)
   const $canvas = reactive()
-  const $selection = reactive()
 
-
-  let _minigl, zp
   let params={
       trs: { translateX:0, translateY:0, angle:0, scale:0, flipv:0, fliph:0},
       crop: {currentcrop:0, glcrop:0, canvas_angle:0, ar:0, arindex:0},
@@ -65,42 +62,47 @@ export function App(){
     //@input: Image, Blob, ArrayBuffer, url  it's an image feeded programmatically
     async function openInput(input, name){
       if(!input) return
-      let arrayBuffer, blob, img, info={name}
-      if(typeof input === 'string' && input.startsWith('http')) {
-        const resp = await fetch(input)
-        arrayBuffer = await resp.arrayBuffer()
-      }
-      else if(input instanceof Image) {
-        const resp = await fetch(input.src)
-        arrayBuffer = await resp.arrayBuffer()
-        img=input
-      }
-      else if(input instanceof ArrayBuffer) {
-        arrayBuffer = input
-      }
-      else if(input instanceof Blob) {
-        blob=input
-        arrayBuffer = await input.arrayBuffer()
-      }
-      else return console.error('Unknown input type')
-      info.size=arrayBuffer.byteLength
+      try {
+          let arrayBuffer, blob, img, info={name}
+          if(typeof input === 'string' && input.startsWith('http')) {
+            const resp = await fetch(input)
+            arrayBuffer = await resp.arrayBuffer()
+          }
+          else if(input instanceof Image) {
+            const resp = await fetch(input.src)
+            arrayBuffer = await resp.arrayBuffer()
+            img=input
+          }
+          else if(input instanceof ArrayBuffer) {
+            arrayBuffer = input
+          }
+          else if(input instanceof Blob) {
+            blob=input
+            arrayBuffer = await input.arrayBuffer()
+          }
+          else return console.error('Unknown input type')
+          info.size=arrayBuffer.byteLength
 
-      if(!blob) blob = new Blob( [ arrayBuffer ] )
-      if(!img) {
-        img = new Image();
-        await new Promise((r,j) => {img.onload=r; img.onerror=j; img.src=URL.createObjectURL(blob); })        
+          if(!blob) blob = new Blob( [ arrayBuffer ] )
+          if(!img) {
+            img = new Image();
+            img.src=URL.createObjectURL(blob)
+            await img.decode();
+          }
+          onImageLoaded(arrayBuffer, info, img)
       }
-      onImageLoaded(arrayBuffer, info, img)
+      catch(e){console.error(e)}
     }
   /////////////////
 
-  ///// CORE FUNCTIONS
+  ///// SETUP
 
     async function onImageLoaded(arrayBuffer, filedata, img){
         if($file.value) resetAll()
         try{
           _exif=await miniExif(arrayBuffer)
-        }catch(e){console.error(e)}
+        }
+        catch(e){console.error(e)}
 
         let meta=_exif?.read()
         if(!meta) meta={}
@@ -131,31 +133,27 @@ export function App(){
     reactive(()=>{
       if($canvas.value){
         const meta = $file._value
+        try {
+          if(_minigl) _minigl.destroy()
+          _minigl = minigl(document.getElementById("canvas"), meta.img, meta.colorspace)
 
-        if(_minigl) _minigl.destroy()
-        _minigl = minigl(document.getElementById("canvas"), meta.img, meta.colorspace)
+          //setup zoom&pan for canvas
+          if(zp) zp() //clean previous events
+          zp = zoom_pan(zoomable,pannable)
 
-        //setup zoom&pan for canvas
-        if(zp) zp() //clean previous events
-        zp = zoom_pan(zoomable,pannable)
-
-        centerCanvas()
-        updateGL()
+          centerCanvas()
+          updateGL()          
+        }
+        catch(e){console.error(e)}
       }
     },{effect:true})
-  
+  /////////////////
+
+  ///// RUN GL PIPELINE
+
     async function updateGL(){
-
-      /*
-      if(params.resizer.width && canvas.width!==params.resizer.width){
-        console.log('set resize')
-        canvas.width=params.resizer.width
-        canvas.height=params.resizer.height
-        _minigl.setupFiltersTextures()
-      }
-      */
-
-      _minigl.loadImage() //load image's texture
+      //load image's texture
+      _minigl.loadImage()
 
       // TRANSLATE/ROTATE/SCALE filter
       if(cropping || params.crop.glcrop){
@@ -181,17 +179,16 @@ export function App(){
         return updateGL()
       }
 
-      //blend at the beginning so that following filters apply to both images
+      //blend here so that following filters apply to both images
       if(!params.blender.$skip && params.blender.blendmap) _minigl.filterBlend(params.blender.blendmap,params.blender.blendmix)
-
 
       /////////// adjustment filters
       let adjparams = {}
-      //Object.keys(params).forEach(e=>adjparams={...adjparams,...params[e]}) //flatten the params object
       if(!params.lights.$skip) adjparams = {...adjparams, ...params.lights}
       if(!params.colors.$skip) adjparams = {...adjparams, ...params.colors}
       if(!params.effects.$skip) adjparams = {...adjparams, ...params.effects}
       _minigl.filterAdjustments({...adjparams})
+
       if(adjparams.bloom) _minigl.filterBloom(adjparams.bloom)
       if(adjparams.noise) _minigl.filterNoise(adjparams.noise)
       if(adjparams.shadows||adjparams.highlights) _minigl.filterHighlightsShadows(adjparams.highlights||0,-adjparams.shadows||0)
@@ -200,76 +197,11 @@ export function App(){
       if(!params.curve.$skip && params.curve.curvepoints) _minigl.filterCurves(params.curve.curvepoints)
       if(!params.filters.$skip && params.filters.opt) _minigl.filterInsta(params.filters.opt,params.filters.mix)      
       
-      _minigl.paintCanvas()  //draw to canvas
+      //draw to canvas
+      _minigl.paintCanvas();
+
       if(updateHistogram) updateHistogram()
     } 
-  /////////////////
-
-  ///// HISTORY
-    /*
-    let history = [], historypos=reactive(0)
-    function pushHistory(){
-      //skip if nothing changed
-      console.log('pushHistory',historypos._value)
-      if(JSON.stringify(adj)===JSON.stringify(history[historypos._value-1])) return
-      history.splice(historypos._value) //remove all from pos
-      history.push(JSON.parse(JSON.stringify(adj)))
-      historypos.value++
-      //console.log('>>>',historypos.value,JSON.stringify(history))
-    }
-    function scrollHistory(direction){
-      const v=direction
-      if(v===-1) {
-        if(historypos.value===0) return
-        historypos.value--
-        if(historypos.value===0) return resetAdj()
-      }
-      else if(v===1) {
-        if(historypos.value===history.length) return
-        historypos.value++
-      }
-      let h = history[historypos.value-1]
-      adj=JSON.parse(JSON.stringify(h||{}))
-      //update all controllers
-      Object.keys(adj).forEach(e=>setAdjCtrl(e))
-      updateGL()
-      updateButtons()
-    }
-    function clearHistory(){
-      history=[]
-      historypos.value=0
-    }
-    function updateButtons(){
-      //if all adjustments are set to 0
-      if(Object.values(adj).reduce((p,v)=>p+=v,0)===0){
-        btn_reset.disabled=true
-      }
-      else {
-        btn_reset.disabled=false
-      }
-    }
-    */
-  /////////////////
-
-  ///// SELECTION
-    
-    //reactive effect to handle selection changes
-    let currentselection=null
-    reactive(()=>{
-      if(!$selection.value) return
-
-      if(currentselection==='composition' && $selection.value!=='composition') {
-        //closing crop section => crop the image
-        hideCrop() //set other UI elements and call _minigl.crop()
-      }
-      else if($selection.value==='composition') showCrop() //set other UI elements
-      //$selection.value=section
-      currentselection=$selection.value
-      const el =document.getElementById($selection.value)
-      document.querySelector('[s_selected]')?.removeAttribute('s_selected');
-      el.setAttribute('s_selected',true)
-
-    },{effect:true})
   /////////////////
 
   ///// CENTER CANVAS
@@ -306,32 +238,9 @@ export function App(){
     }
   /////////////////
 
-  ///// SPLIT VIEW
-    let splitwidth, splitimage
-    const $showsplit = reactive(false)
-
-    function showSpitView(){
-      splitimage = _minigl.img_cropped || _minigl.img
-      btn_split.setAttribute('selected',true)
-      $showsplit.value = true
-    }
-    function hideSplitView(){
-      $showsplit.value = false
-      btn_split.removeAttribute('selected')
-    }
-    function toggleSplitView(){
-      if(cropping) return
-      if($showsplit._value) hideSplitView()
-      else showSpitView()
-    }
-    function onSplitUpdate(sw){
-      splitwidth=sw
-    }
-  /////////////////
-
   ///// INFO
     async function showInfo(){
-      const meta = $file._value //use _value otherwhise component below will become reactive!
+      const meta = $file.value
       await alert(()=>html`
           <div style="text-align:left;font-size:12px;max-height:50vh;overflow:auto;">
             <div class="section">FILE</div>
@@ -359,32 +268,28 @@ export function App(){
 
           </div>`
         ,400)
-
     }
   /////////////////
 
-  ///// HISTOGRAM
-    let updateHistogram
-    const $histo=reactive(false)
-    function showHisto(){
-      if(btn_histo.hasAttribute('selected')){
-        btn_histo.removeAttribute('selected')
-        $histo.value=false
-      }
-      else {
-        btn_histo.setAttribute('selected',true)
-        $histo.value=true
-      }
-    }
-    function hideHisto(){
-        btn_histo.removeAttribute('selected')
-        $histo.value=false      
-    }
+  ///// SELECTION
+    const $selection = reactive()
+    let currentselection=null
+
+    //reactive effect to handle selection changes
+    reactive(()=>{
+
+      //disable-enable UI elements when cropping
+      if($selection.value==='composition') onshowCrop() 
+      else if(currentselection==='composition') onhideCrop()
+
+      currentselection=$selection.value
+
+    },{effect:true})
   /////////////////
 
   ///// CROP
     let cropping=false
-    function showCrop(){
+    function onshowCrop(){
         hideSplitView()
         hideHisto()
         centerCanvas()
@@ -392,39 +297,62 @@ export function App(){
         btn_info.setAttribute('disabled',true)
         btn_histo.setAttribute('disabled',true)
         btn_split.setAttribute('disabled',true)
-        //DISABLE ZOOMPAN
-        if(zp) zp()
+        if(zp) zp() //DISABLE ZOOMPAN
     }
   
-    function hideCrop(){
+    function onhideCrop(){
+      cropping=false
       btn_info.removeAttribute('disabled')
       btn_histo.removeAttribute('disabled')
       btn_split.removeAttribute('disabled')
-      cropping=false
-      //RESUME ZOOMPAN
-      zp = zoom_pan(zoomable,pannable)
-      handleCrop()
+      zp = zoom_pan(zoomable,pannable) //ENABLE ZOOMPAN
     }
 
-    async function handleCrop(){
-      if(!croprect) return //croprect is the DOM element with the crop size
-      crop.style.display='' //if it was hidden by perspective
-      const ratio=canvas.width/crop.offsetWidth
-      params.crop.glcrop={
-        left:Math.round((croprect.offsetLeft)*ratio),
-        top:Math.round((croprect.offsetTop)*ratio),
-        width:Math.round((croprect.offsetWidth)*ratio),
-        height:Math.round((croprect.offsetHeight)*ratio)
+    function onCropUpdate(){
+      ////this is a UI hack, need to change a button inside Composition component ... sorry
+      //toggle btn_reset_comp
+      if(Object.values(params.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params.crop).reduce((p,v)=>p+=v,0)===0 && params.perspective.modified==0 && params.resizer.width===0) btn_reset_comp.setAttribute('disabled',true)
+      else btn_reset_comp.removeAttribute('disabled')
+    }
+  /////////////////
+
+  ///// HISTOGRAM
+    let updateHistogram  //will receive the "updateHisto" function from the component
+    const $showhisto=reactive(false)
+
+    function toggleHisto(){
+      if(cropping) return
+      if($showhisto.value) $showhisto.value=false
+      else $showhisto.value=true
+    }
+    function hideHisto(){
+      $showhisto.value=false      
+    }
+  /////////////////
+
+  ///// SPLIT VIEW
+    let splitwidth, splitimage
+    const $showsplit = reactive(false)
+
+    function hideSplitView(){
+      $showsplit.value = false
+    }
+    function toggleSplitView(){
+      if(cropping) return
+      if($showsplit._value) $showsplit.value = false
+      else {
+        splitimage = _minigl.img_cropped || _minigl.img
+        $showsplit.value = true        
       }
-      updateGL()
-      centerCanvas()
+    }
+    function onSplitUpdate(sw){
+      splitwidth=sw
     }
   /////////////////
 
   ///// SAMPLE IMAGES
-
     async function samples(){
-      alert((handleClose)=>html`
+      await alert((handleClose)=>html`
           <div style="height:250px">
             <img id="snail.jpg" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:20px;border-radius:10px;" src="/samples/snail-8577681_1280.jpg" title="jpg" width=130>
             <img id="seagull.png" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:160px;border-radius:10px;" src="/samples/seagull-8547189_1280.png" title="png" width=150>
@@ -441,31 +369,28 @@ export function App(){
     }
   ///////////////// 
 
-  /*
-    function test(){
-      const b = _minigl.readPixels()
-      const pixels = []
-      let diff=0
-      for(let i=0; i<256; i++){
-        let pixel = b[i*4]
-        if(pixel!==i) {
-          pixel+='*'
-          diff++
-        }
-        pixels.push(pixel)
+  ///// FULLSCREEN
+    async function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else if (document.exitFullscreen) {
+        await document.exitFullscreen();
       }
-      console.log(diff,pixels)
     }
-  */
+    function detectFullScreen() {
+      //when in/out fullscreen reset view to ensure proper UI alignments
+      $selection.value=''
+      centerCanvas();
+    }
+    document.addEventListener("fullscreenchange", detectFullScreen)
+  /////////////////
 
   return html`
-    <div class="app">
+    <div class="app" >
 
-        <div class="btn_theme">
-          ${()=>ThemeToggle('dark',true)}
-        </div>
+      <div class="btn_theme">${()=>ThemeToggle('dark',true)}</div>
 
-
+      /******** LOADING PAGE ********/
       ${()=>!$file.value && html`
         <div class="main" style="justify-content: center;">
             <img src="${logo}" width=130 alt="logo"/>
@@ -478,7 +403,11 @@ export function App(){
         </div>
       `}
 
+
+      /******** EDITOR PAGE ********/
       ${()=>$file.value && html`
+        <div class="btn_fullscreen"><a @click="${toggleFullScreen}">\u26F6</a></div>
+
         <div class="header">
           <div class="banner">
             <img src="${logo}" width=30 alt="logo"/> ${store('appname')}
@@ -492,25 +421,34 @@ export function App(){
               <div id="editor" class="editor">
                 <div id="zoomable" @dblclick="${canvas_dblclick}" @click="${canvas_click}">
                   <div id="pannable">
+
+                    /******** PAINT CANVAS *******/
                     <canvas :ref="${$canvas}" id="canvas" class="checkered"></canvas>
+
+                    /******** SPLIT VIEW *******/
                     ${()=>$showsplit.value && SplitView(splitimage,canvas.style.width,canvas.style.height,splitwidth,onSplitUpdate)}                    
-                    ${()=>$selection.value==='composition' && Cropper(canvas, params)}
+                    
+                    /******** CROP CANVAS *******/
+                    ${()=>$selection.value==='composition' && Cropper(canvas, params, onCropUpdate)}
+
+                    /******** PERSPECTIVE point of render *******/
                     <div id="plcquad" style="display: contents;"></div>
+
                   </div>
                 </div>
               </div>
 
-              <div class="sidebar" >
+              <div class="sidebar">
 
                 <div>
                   ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded),'width:120px;')}
-                  <button style="width:120px;" id="btn_download" @click="${()=>downloadImage($file,_exif,_minigl)}">download</button>
+                  <button style="width:120px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl)}}">download</button>
                 </div>
 
                 <div>
                   <button style="width:70px;" id="btn_info" @click="${showInfo}">info</button>
-                  <button style="width:70px;" id="btn_histo" @click="${showHisto}">histo</button>
-                  <button style="width:70px;" id="btn_split" @click="${toggleSplitView}">split</button>
+                  <button style="width:70px;" id="btn_histo" @click="${toggleHisto}" :selected="${()=>$showhisto.value}">histo</button>
+                  <button style="width:70px;" id="btn_split" @click="${toggleSplitView}" :selected="${()=>$showsplit.value}">split</button>
                   <br>
                 </div>
 
@@ -530,9 +468,11 @@ export function App(){
                 ${blender($selection, params, updateGL)}
 
               </div>
+
             <div>
           
-            ${()=>$histo.value && Histogram($file._value.colorspace,(fn)=>{updateHistogram=fn;updateGL();})}
+            /******** HISTOGRAM *******/
+            ${()=>$showhisto.value && Histogram($file._value.colorspace, (fn)=>{updateHistogram=fn;updateGL();})}
 
         </div>
       `}

@@ -81,7 +81,7 @@ export default function blender($selection, _params, onUpdate){
                 <input type="text" :value="${()=>blendname.value}" disabled style="width:90%;margin-bottom:10px;padding-right:20px;">
                 /* RANGE INPUT */
                 <div style="display:flex;justify-content: space-around;align-items: center;">
-                  <label class="rangelabel">blend mix</label>
+                  <div class="rangelabel">blend mix</div>
                   <input id="blender_blendmix" style="width:130px;" type="range" value="${params.blendmix}" min=0 max=1 step=0.01 @input="${setParam}" @dblclick="${resetParamCtrl}" :disabled="${()=>disablerange.value}"/>
                   <input id="blender_blendmix_" type="number" class="rangenumb" step=0.01 min=0 max=1 value="${params.blendmix}" @input="${setParam}" :disabled="${()=>disablerange.value}">
                 </div>

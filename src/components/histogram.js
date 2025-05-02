@@ -1,4 +1,4 @@
-import { html, reactive, onMount, onUnmount } from 'mini'
+import { html, onMount, onUnmount } from 'mini'
 
 import Worker from './histogram_worker.js?worker'
 import {handlePointer} from '../js/zoom_pan.js'
@@ -26,13 +26,14 @@ export default function Histogram(colorspace, onSetup){
     })
     onUnmount(()=>{
       worker.terminate()
-      //cleanevt()
+      cleanevt()
     })
 
 
     let thumb, thumbctx, histoctx
     let worker, updating=false
     async function setupHistogramWorker(){
+      try{
         //console.log('>>INIT webworker<<')
         thumb = new OffscreenCanvas(10,10)
         thumb.width = 350
@@ -48,16 +49,17 @@ export default function Histogram(colorspace, onSetup){
           } else console.log(event.data)
         };
         worker.onerror = (error) => {
-          console.log(`Worker error: ${error.message}`);
+          console.error(`Worker error: ${error.message}`);
           throw error;
         };
         worker.postMessage({init:true,width:histoctx.canvas.width,height:histoctx.canvas.height})
+      }
+      catch(e){console.error(e)}
     }
 
     async function drawHistogram() {
       if(worker && !updating) {
         updating=true
-        //const pixels = gl.canvas.getPixelArray() //too slow for Safari, ok for chrome!!
         thumb.height = thumb.width / (canvas.width/canvas.height)
         thumbctx.drawImage(canvas,0,0,canvas.width,canvas.height,0,0,thumb.width,thumb.height)
         const pixels = thumbctx?.getImageData(0,0,thumbctx.canvas.width,thumbctx.canvas.height).data

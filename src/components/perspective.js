@@ -1,13 +1,10 @@
-import { html, reactive, onMount, onUnmount} from 'mini'
+import { html, onMount, onUnmount} from 'mini'
 
 
-export default function Quad(canvas, adj, onUpdate){
-    let params = adj.perspective
+export default function Quad(canvas, params, onUpdate){
 
     onMount(()=>{
       quadcontainer.addEventListener("pointerdown", dragstart);
-      //quadcanvas.width=canvas.width
-      //quadcanvas.height=canvas.height
       quadcanvas.width=canvas.offsetWidth
       quadcanvas.height=canvas.offsetHeight
       w = canvas.offsetWidth
@@ -90,7 +87,6 @@ export default function Quad(canvas, adj, onUpdate){
       }
       c.closePath();
       c.stroke();
-      toggleResetComposition()
       if(params.quad!==undefined) params.quad=points //.map(e=>[e[0]*canvas.width,e[1]*canvas.height])
       if(onUpdate) onUpdate()
     }
@@ -100,14 +96,6 @@ export default function Quad(canvas, adj, onUpdate){
       points = [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
       params.quad=points
       draw()
-    }
-
-    ////this is a UI hack, need to change a button outside of this component ... sorry
-    function toggleResetComposition(){
-      /*  
-      if(params.modified==0) btn_reset_perspective.setAttribute('disabled',true)
-      else btn_reset_perspective.removeAttribute('disabled')
-      */
     }
 
 

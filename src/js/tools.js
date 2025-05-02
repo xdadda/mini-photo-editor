@@ -37,23 +37,27 @@ import { alert } from 'mini/components'
 
   export function downloadFile(blob, name){
     if(!blob || !name) return console.error('download missing inputs')
-    var el = document.createElement('a')
-    el.href = URL.createObjectURL(blob)
-    el.download = name
-    el.click()
+    try {
+      var el = document.createElement('a')
+      el.href = URL.createObjectURL(blob)
+      el.download = name
+      el.click()
+    } catch(error){
+      console.error(error)
+    }
   }
 
   export async function readImage(file, onLoaded=null){
     try {
-      //const file = await openFile('image/*')
       if(!file) return
       const reader= new FileReader()
       await new Promise(r=> reader.onload=r, reader.readAsArrayBuffer(file))
       const {name,size,type,lastModified} = file;
       const blob = new Blob([reader.result],{type})
       const img = new Image();
-      await new Promise((r,j) => {img.onload=r; img.onerror=j; img.src=URL.createObjectURL(blob); })
-      
+      img.src=URL.createObjectURL(blob);
+      await img.decode();
+  
       if(onLoaded) onLoaded(reader.result, {name,size,type,lastModified}, img)
 
     } catch(error){

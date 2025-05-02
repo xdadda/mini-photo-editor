@@ -1,21 +1,17 @@
-import { html, reactive, onMount, onUnmount} from 'mini'
+import { html, onMount, onUnmount} from 'mini'
 import './cropper.css'
 
-export default function Cropper(canvas, adj) {
+export default function Cropper(canvas, adj, onUpdate) {
     const params = adj.crop
     const trs = adj.trs
 
     onMount(()=>{
       resetCropRect(params.currentcrop)    
       crop.addEventListener("pointerdown", dragstart);
-      crop.addEventListener("pointermove", drag);
-      crop.addEventListener("pointerup", dragstop);
     })
 
     onUnmount(()=>{
       crop.removeEventListener("pointerdown", dragstart);
-      crop.removeEventListener("pointermove", drag);
-      crop.removeEventListener("pointerup", dragstop);    
     })
 
 
@@ -28,10 +24,11 @@ export default function Cropper(canvas, adj) {
     function dragstop(e){
       dragging=false
       crop.releasePointerCapture(e.pointerId)
+      crop.removeEventListener("pointermove", drag);
+      crop.removeEventListener("pointerup", dragstop);    
       updateRect()
       params.currentcrop=rect
-      //this is a UI hack, need to change a button outside of this component ... sorry
-      toggleResetComposition()
+      if(onUpdate) onUpdate(rect)
     }
 
     function updateRect(){
@@ -45,6 +42,8 @@ export default function Cropper(canvas, adj) {
     function dragstart(e){
       dragging=true
       crop.setPointerCapture(e.pointerId)
+      crop.addEventListener("pointermove", drag);
+      crop.addEventListener("pointerup", dragstop);
 
       if(params.ar) croprect.style.aspectRatio=params.ar
       else croprect.style.aspectRatio=''
@@ -151,15 +150,9 @@ export default function Cropper(canvas, adj) {
         const c = currentc
         croprect.style.inset=`${c.offsetTop}px ${c.offsetRight}px ${c.offsetBottom}px ${c.offsetLeft}px`
       }
-      //this is a UI hack, need to change a button outside of this component ... sorry
-      toggleResetComposition()
+      if(onUpdate) onUpdate(currentc||0)
     }
     
-    ////this is a UI hack, need to change a button outside of this component ... sorry
-    function toggleResetComposition(){      
-      if(Object.values(trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0 && adj.resizer.width===0) btn_reset_comp.setAttribute('disabled',true)
-      else btn_reset_comp.removeAttribute('disabled')
-    }
 
   return html`
       <div id="crop" @dblclick="${()=>resetCropRect()}">

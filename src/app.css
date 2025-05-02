@@ -57,4 +57,14 @@
   z-index:999;
   width:50px;
 }
+.btn_fullscreen {
+  position:absolute;
+  top: env(safe-area-inset-top);
+  right:calc(env(safe-area-inset-right) + 30px);
+  z-index:999;
+  width:50px;
+}
+.btn_theme:hover,.btn_fullscreen:hover{
+  filter:brightness(0.8);
+}
 
