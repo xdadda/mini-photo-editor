@@ -1,10 +1,8 @@
 import { html } from 'mini'
 import CC from './components/colorcurve.js'
 
-import section from './__section.js'
+export default function curves($selection, handleSelection,  params,onUpdate){
 
-export default function curves($selection, _params, onUpdate){
-    const params=_params.curve
   ///// COLOR CURVE
     let curve = {
       space:0, //0=all, 1=R, 2=G, 3=B,
@@ -34,17 +32,31 @@ export default function curves($selection, _params, onUpdate){
   /////////////////
 
 
+
+
   return html`
-    ${section(
-      'curve', 
-      175, //height 
-      $selection, 
-      _params, 
-      onUpdate,
-      resetCurve, 
-      ()=>html`<div >
+    <div class="section" id="curves" :style="${()=>$selection.value==='curves'&&'height:175px;'}">
+        <div class="section_header" @click="${()=>handleSelection('curves')}">
+          <b class="section_label">color curve</b>
+          <a id="btn_reset_curve" class="reset_btn" @click="${resetCurve}" disabled title="reset">\u00D8</a>
+        </div>
+        ${()=>$selection.value==='curves' && html`
+          <div>
+              <hr>
               ${()=>CC(curve,setCurve)}
-          </div>`
-      )}
+          </div>
+        `}
+    </div>
+
+
   `
 }
+
+/*
+
+    <div>
+      <hr>
+        ${()=>CC(curve,setCurve)}
+    </div>
+
+*/

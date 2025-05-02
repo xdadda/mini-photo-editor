@@ -48,17 +48,16 @@ export function App(){
 
 
   let _minigl, zp
-  let params={
+  let adj={
       trs: { translateX:0, translateY:0, angle:0, scale:0, flipv:0, fliph:0},
       crop: {currentcrop:0, glcrop:0, canvas_angle:0, ar:0, arindex:0},
       lights: { brightness:0, exposure:0, gamma:0, contrast:0, shadows:0, highlights:0, bloom:0, },
       colors: { temperature:0, tint:0, vibrance:0, saturation:0, sepia:0, },
       effects: { clarity:0, noise:0, vignette:0, },
       curve: {curvepoints: 0},
-      filters: { opt:0, mix:0 },
+      filter: { opt:0, mix:0 },
       perspective: {quad:0, modified:0},
-      blender: {blendmap:0, blendmix:0.5},
-      resizer: {width:0, height:0}
+      blend: {blendmap:0,blendmix:0.5}
     }
 
   ///// INPUT FUNCTION (for future integrations)
@@ -108,6 +107,26 @@ export function App(){
         //if(meta.xml) meta.xml = parser.parseFromString(meta.xml.slice(meta.xml.indexOf('<')), 'application/xml');
         if(meta.xml) {
           meta.xml = meta.xml.slice(meta.xml.indexOf('<')).replace(/ +(?= )/g,'').replace(/\r\n|\n|\r/gm,'')
+          /*
+          const tags={}
+          const s =  ['exif','exifEX','tiff','xmp','photoshop']
+          s.forEach(t=>{
+            const r = new RegExp(`<${t}:(.*?)>(.*?)</${t}`, "smig")
+            tags[t]={}
+            let match = r.exec(meta.xml)
+            while (match) {
+              console.log(match[2])
+              if(match[2].includes('rdf:li')){
+                let x=[]
+                match[2].matchAll(/\<rdf:li>(.*?)<\/rdf/gm).forEach(e=>x.push(e[1]))
+                match[2]=x
+              }
+              tags[t][match[1]]=match[2]
+              match = r.exec(meta.xml)
+            }
+          })
+          console.log(tags)
+          */
         }
         meta.file = {...filedata, hsize:filesizeString(filedata.size), width:img?.width || img?.videoWidth || '-', height:img?.height || img?.videoHeight || '-'};
         meta.img = img;
@@ -122,8 +141,8 @@ export function App(){
       hideHisto()
       hideSplitView()
       splitwidth=0.5
-      for(const s in params){
-        for(const v in params[s]) params[s][v]=0
+      for(const s in adj){
+        for(const v in adj[s]) adj[s][v]=0
       }
     }
 
@@ -145,60 +164,43 @@ export function App(){
     },{effect:true})
   
     async function updateGL(){
-
-      /*
-      if(params.resizer.width && canvas.width!==params.resizer.width){
-        console.log('set resize')
-        canvas.width=params.resizer.width
-        canvas.height=params.resizer.height
-        _minigl.setupFiltersTextures()
-      }
-      */
+      let flatparams = {}
+      Object.keys(adj).forEach(e=>flatparams={...flatparams,...adj[e]}) //flatten the adj object
 
       _minigl.loadImage() //load image's texture
 
+      
       // TRANSLATE/ROTATE/SCALE filter
-      if(cropping || params.crop.glcrop){
+      if(cropping || adj.crop.glcrop){
+        adj.trs.angle+=adj.crop.canvas_angle
+        _minigl.filterMatrix(adj.trs)
+        adj.trs.angle-=adj.crop.canvas_angle
 
-        params.trs.angle+=params.crop.canvas_angle
-        _minigl.filterMatrix(params.trs)
-        params.trs.angle-=params.crop.canvas_angle
-
-        // PERSPECTIVE correction
-        if(params.perspective.quad) {
+        if(adj.perspective.quad) {
           let before=[[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
           before = before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
-          let after = (params.perspective.quad).map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+          let after = (adj.perspective.quad).map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
           _minigl.filterPerspective(before,after, false, false)
         }
-
       }
 
       // RUN CROP when set (crop image after TRS but before other filters)
-      if(params.crop.glcrop) {
-        _minigl.crop(params.crop.glcrop)
-        params.crop.glcrop=0
+      if(adj.crop.glcrop) {
+        _minigl.crop(adj.crop.glcrop)
+        adj.crop.glcrop=0
         return updateGL()
       }
 
       //blend at the beginning so that following filters apply to both images
-      if(!params.blender.$skip && params.blender.blendmap) _minigl.filterBlend(params.blender.blendmap,params.blender.blendmix)
+      if(adj.blend.blendmap) _minigl.filterBlend(adj.blend.blendmap,adj.blend.blendmix)
 
-
-      /////////// adjustment filters
-      let adjparams = {}
-      //Object.keys(params).forEach(e=>adjparams={...adjparams,...params[e]}) //flatten the params object
-      if(!params.lights.$skip) adjparams = {...adjparams, ...params.lights}
-      if(!params.colors.$skip) adjparams = {...adjparams, ...params.colors}
-      if(!params.effects.$skip) adjparams = {...adjparams, ...params.effects}
-      _minigl.filterAdjustments({...adjparams})
-      if(adjparams.bloom) _minigl.filterBloom(adjparams.bloom)
-      if(adjparams.noise) _minigl.filterNoise(adjparams.noise)
-      if(adjparams.shadows||adjparams.highlights) _minigl.filterHighlightsShadows(adjparams.highlights||0,-adjparams.shadows||0)
-      ///////////
-
-      if(!params.curve.$skip && params.curve.curvepoints) _minigl.filterCurves(params.curve.curvepoints)
-      if(!params.filters.$skip && params.filters.opt) _minigl.filterInsta(params.filters.opt,params.filters.mix)      
+      // other filters
+      _minigl.filterAdjustments({...flatparams})
+      if(flatparams.bloom) _minigl.filterBloom(flatparams.bloom)
+      if(flatparams.noise) _minigl.filterNoise(flatparams.noise)
+      if(flatparams.shadows||flatparams.highlights) _minigl.filterHighlightsShadows(flatparams.highlights||0,-flatparams.shadows||0)
+      if(flatparams.curvepoints) _minigl.filterCurves(flatparams.curvepoints)
+      if(flatparams.opt) _minigl.filterInsta(flatparams.opt,flatparams.mix)      
       
       _minigl.paintCanvas()  //draw to canvas
       if(updateHistogram) updateHistogram()
@@ -253,8 +255,21 @@ export function App(){
 
   ///// SELECTION
     
-    //reactive effect to handle selection changes
-    let currentselection=null
+    function handleSelection(section){
+      if($selection.value==='composition' && section!=='composition') {
+        //closing crop section => crop the image
+        hideCrop() //set other UI elements and call _minigl.crop()
+      }
+      else if(section==='composition') showCrop() //set other UI elements
+      $selection.value=section
+      const el =document.getElementById(section)
+
+      document.querySelector('[s_selected]')?.removeAttribute('s_selected');
+      el.setAttribute('s_selected',true)
+    }
+
+    //react to selection changes
+    const currentselection=null
     reactive(()=>{
       if(!$selection.value) return
 
@@ -264,10 +279,11 @@ export function App(){
       }
       else if($selection.value==='composition') showCrop() //set other UI elements
       //$selection.value=section
-      currentselection=$selection.value
       const el =document.getElementById($selection.value)
+
       document.querySelector('[s_selected]')?.removeAttribute('s_selected');
       el.setAttribute('s_selected',true)
+
 
     },{effect:true})
   /////////////////
@@ -410,7 +426,7 @@ export function App(){
       if(!croprect) return //croprect is the DOM element with the crop size
       crop.style.display='' //if it was hidden by perspective
       const ratio=canvas.width/crop.offsetWidth
-      params.crop.glcrop={
+      adj.crop.glcrop={
         left:Math.round((croprect.offsetLeft)*ratio),
         top:Math.round((croprect.offsetTop)*ratio),
         width:Math.round((croprect.offsetWidth)*ratio),
@@ -439,6 +455,7 @@ export function App(){
       //quick hack to close the samples window
       root.lastElementChild.remove()
     }
+
   ///////////////// 
 
   /*
@@ -457,6 +474,15 @@ export function App(){
       console.log(diff,pixels)
     }
   */
+    function resize(){
+      canvas.width=0.5*canvas.width
+      canvas.height=0.5*canvas.height
+      //_minigl.gl.canvas.width=width
+      //_minigl.gl.canvas.height=height
+      _minigl.setupFiltersTextures() //recreacte working textures with new canvas size!
+      centerCanvas()
+      updateGL()
+    }
 
   return html`
     <div class="app">
@@ -494,7 +520,7 @@ export function App(){
                   <div id="pannable">
                     <canvas :ref="${$canvas}" id="canvas" class="checkered"></canvas>
                     ${()=>$showsplit.value && SplitView(splitimage,canvas.style.width,canvas.style.height,splitwidth,onSplitUpdate)}                    
-                    ${()=>$selection.value==='composition' && Cropper(canvas, params)}
+                    ${()=>$selection.value==='composition' && Cropper(canvas, adj)}
                     <div id="plcquad" style="display: contents;"></div>
                   </div>
                 </div>
@@ -511,23 +537,24 @@ export function App(){
                   <button style="width:70px;" id="btn_info" @click="${showInfo}">info</button>
                   <button style="width:70px;" id="btn_histo" @click="${showHisto}">histo</button>
                   <button style="width:70px;" id="btn_split" @click="${toggleSplitView}">split</button>
+                  <button @click="${()=>resize()}">resize</button>
                   <br>
                 </div>
 
                 /******** COMPOSITION *******/
-                ${composition($selection, params, updateGL, ()=>_minigl, centerCanvas)}
+                ${composition($selection,handleSelection,adj,updateGL,()=>_minigl,centerCanvas)}
 
                 /******** ADJUSTMENTS *******/
-                ${adjustments($selection, params, updateGL)}
+                ${adjustments($selection,handleSelection,adj,updateGL)}
 
                 /******** COLOR CURVE *******/
-                ${curves($selection, params, updateGL)}
+                ${curves($selection,handleSelection,adj.curve,updateGL)}
 
                 /******** FILTERS *******/
-                ${filters($selection, params, updateGL)}
+                ${filters($selection,handleSelection,adj.filter,updateGL)}
 
                 /******** BLENDER *******/
-                ${blender($selection, params, updateGL)}
+                ${blender($selection,handleSelection,adj,updateGL)}
 
               </div>
             <div>

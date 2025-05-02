@@ -57,9 +57,8 @@
   margin: 2px 0;
   font-size:14px;
   height: 23px;
-  transition: height 0.2s;
-      overflow: hidden;
-
+  transition: height 0.3s;
+  overflow: hidden;
 }
     .section:hover {
       background-color: light-dark( #edebeb, #292929);
@@ -82,21 +81,6 @@
       justify-content: space-between;
       cursor:pointer;
     }
-    .section .section_container{
-      overflow: hidden;
-      height: 100%;
-      color: grey;
-    }
-
-    .section .section_skip {
-      width: 20px;
-      color:darkorange;
-      cursor:cell;
-    }
-    .section .section_skip:hover {
-      filter: brightness(1.2);
-    }
-
     .section .section_label {
       flex: 1;
       text-align: left;

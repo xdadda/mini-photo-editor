@@ -5,35 +5,25 @@ import icon_flip from './assets/icon_flip.svg?raw'
 import Quad from './components/perspective.js'
 
 
-export default function composition($selection, adj, onUpdate, get_minigl, centerCanvas){
+export default function composition($selection, handleSelection,  adj, onUpdate, get_minigl, centerCanvas){
   let _minigl
   let prevselection
 
   reactive(()=>{
     if($selection.value==='composition'){
       _minigl=get_minigl()
-      _minigl.resetCrop() //resetCrop will restore original/ resized image size
-      
-      //get current aspect ratio and save it in the pic - 1/pic AR settings
+      //set current aspect ratio
       arsvalues[1]=_minigl.gl.canvas.width/_minigl.gl.canvas.height
       arsvalues[2]=1/arsvalues[1]
-
-      //rescale image if needed
-      /*
-      if(adj.resizer.width) {
-        canvas.width=adj.resizer.width
-        canvas.height=adj.resizer.height
-      }
-      */
-
+      _minigl.resetCrop()
       updateCanvasAngle()
       onUpdate()
       prevselection=$selection.value
-      //updateResetBtn()
+      updateResetBtn()
     }
     else {
       if(prevselection==='composition') {
-        //updateResetBtn()
+        updateResetBtn()
         hidePerspective()
         prevselection=undefined
       }
@@ -68,7 +58,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
         hidePerspective()
 
         resetCropRect()
-        resetResizer()
         updateResetBtn()
 
         //showCrop()
@@ -101,10 +90,37 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
       onUpdate()
     }
 
+    function updateCanvasAngle(){
+      if(adj.crop.canvas_angle%180){
+        const {width,height} = _minigl.img
+        _minigl.gl.canvas.width=height
+        _minigl.gl.canvas.height=width
+        _minigl.setupFiltersTextures() //recreacte working textures with new canvas size!        
+      }
+      else {
+        const {width,height} = _minigl.img
+        _minigl.gl.canvas.width=width
+        _minigl.gl.canvas.height=height
+        _minigl.setupFiltersTextures() //recreacte working textures with new canvas size!
+      }
+      //ensure canvas is centered
+      centerCanvas()
+    }
 
+    function rotateCanvas(deg){
+      adj.crop.canvas_angle = (adj.crop.canvas_angle+deg) % 360
+      updateCanvasAngle()
+      //reset crop view
+      crop.style.width= Math.round(canvas.getBoundingClientRect().width)+'px'
+      crop.style.height = Math.round(canvas.getBoundingClientRect().height)+'px'
+      croprect.style.inset='0'
+
+      updateResetBtn()
+      onUpdate()
+    }
 
     function updateResetBtn(){
-      const flag = Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0 && adj.resizer.width===0
+      const flag = Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0
       if(flag) btn_reset_comp.setAttribute('disabled',true)
       else btn_reset_comp.removeAttribute('disabled')
     }
@@ -125,35 +141,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
   /////////////////
 
   ///// ROTATE CANVAS
-
-    function updateCanvasAngle(){
-      const {width,height} = _minigl
-      if(adj.crop.canvas_angle%180){
-        _minigl.gl.canvas.width=height
-        _minigl.gl.canvas.height=width
-      }
-      else {
-        _minigl.gl.canvas.width=width
-        _minigl.gl.canvas.height=height
-      }
-      _minigl.setupFiltersTextures() //recreacte working textures with new canvas size!
-      //ensure canvas is centered
-      centerCanvas()
-    }
-
-    function rotateCanvas(deg){
-      adj.crop.canvas_angle = (adj.crop.canvas_angle+deg) % 360
-      updateCanvasAngle()
-      //reset crop view
-      crop.style.width= Math.round(canvas.getBoundingClientRect().width)+'px'
-      crop.style.height = Math.round(canvas.getBoundingClientRect().height)+'px'
-      croprect.style.inset='0'
-        hidePerspective()
-
-      updateResetBtn()
-      onUpdate()
-    }
-
     function setTRS(e){ //id= "section:adj"
       const value = e.target.value
       const id = this.id.split('_')
@@ -223,45 +210,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
     }
   /////////////////
 
-  ///// RESIZER
-    const resizeperc=reactive(100)
-
-    function resize(newwidth,newheight){
-      resize_width.value=adj.resizer.width=newwidth
-      resize_height.value=adj.resizer.height=newheight
-      //centerCanvas()
-      _minigl.resize(newwidth,newheight)
-      resizeperc.value=Math.round(newwidth/_minigl.img.width*1000)/10
-      updateCanvasAngle()
-      resetCropRect()
-      updateResetBtn()
-      onUpdate()
-    }
-
-
-    function resetResizer(){
-      _minigl.resetResize()
-      adj.resizer.width=0
-      adj.resizer.height=0
-      resize_width.value=_minigl.width
-      resize_height.value=_minigl.height
-      resizeperc.value=100
-    }
-
-    function setWidth(){
-      const ar = arsvalues[1]
-      const width=Math.max(100,this.value)
-      const height=Math.floor(width/ar)
-      resize(width,height)
-    }
-    function setHeight(){
-      const ar = arsvalues[1]
-      const height=Math.max(100,this.value)
-      const width=Math.floor(height*ar) 
-      resize(width,height)
-    }
-  /////////////////
-
   return html`
     <style>
       .crop_btn {
@@ -274,46 +222,38 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
         stroke: white;
       }
     </style>
-    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:350px;'}">
+    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:225px;'}">
         <div class="section_header" @click="${()=>$selection.value = 'composition'}">
           <b class="section_label">composition</b>
           <a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
         </div>
 
-        <div class="section_container" >
-          ${()=>$selection.value==='composition' && html`
+        ${()=>$selection.value==='composition' && html`
+          <div>
             <hr>
-                <div style="display:flex;justify-content: space-around;align-items: center;">
-                  <label style="width:100px;text-align:left;color:gray;">rotation</label>
-                  <input id="trs_angle" style="width:130px;" type="range" value="${adj['trs']['angle']}" min=-45 max=45 step=0.25 @input="${setTRS}" @dblclick="${resetTRSCtrl}"/>
-                  <input id="trs_angle_" type="number" class="rangenumb" step=0.25 min=-45 max=45 value="${adj['trs']['angle']}" @input="${setTRS}">
-                </div>
 
-              <div style="display:flex;justify-content: flex-end;color:grey; margin-right: 3px;">
-                <button id="fliph" class="crop_btn" title="flip x" selected="${!!adj.trs.fliph}" @click="${()=>flip('h')}">${icon_flip}</button>
-                <button id="flipv" class="crop_btn" title="flip y" selected="${!!adj.trs.flipv}" @click="${()=>flip('v')}" style="rotate: 270deg;">${icon_flip}</button>
-                <button class="crop_btn" title="rotate left" @click="${()=>rotateCanvas(-90)}">${icon_rotate}</button>
+            <div style="display:flex;justify-content: space-around;align-items: center;">
+              <label style="width:100px;text-align:left;color:gray;">rotate</label>
+              <input id="trs_angle" style="width:130px;" type="range" value="${adj['trs']['angle']}" min=-45 max=45 step=0.25 @input="${setTRS}" @dblclick="${resetTRSCtrl}"/>
+              <input id="trs_angle_" type="number" class="rangenumb" step=0.25 min=-45 max=45 value="${adj['trs']['angle']}" @input="${setTRS}">
+            </div>
 
-              </div>
+            <div style="display:flex;justify-content: flex-end;color:grey; margin-right: 3px;">
+              <button id="fliph" class="crop_btn" title="flip x" selected="${!!adj.trs.fliph}" @click="${()=>flip('h')}">${icon_flip}</button>
+              <button id="flipv" class="crop_btn" title="flip y" selected="${!!adj.trs.flipv}" @click="${()=>flip('v')}" style="rotate: 270deg;">${icon_flip}</button>
+              <button class="crop_btn" title="rotate left" @click="${()=>rotateCanvas(-90)}">${icon_rotate}</button>
+
+            </div>
             <hr>
-              <div style="text-align:left;">crop ratio</div>
               <div style="text-align:left;" id="aspects">
                 ${ars.map((e,i)=>html`
                   <button id="ar_${i}" @click="${()=>setCropAR(i)}" class="crop_btn" selected="${i===adj.crop.arindex }" @dblclick="${resetCropRect}">${e}</button>
                 `)}
               </div>
             <hr>
-              <div style="text-align:left;">image size</div>
-              <div style="display:flex;justify-content: space-around;align-items: center;">
-                <label style="width:100px;text-align:left;color:gray;">(${()=>resizeperc.value+'%'})</label>
-                <input id="resize_width" type="number" value="${canvas.width}" style="text-align:center;width:90px;" @change="${setWidth}"> 
-                x 
-                <input id="resize_height" type="number" value="${canvas.height}" style="text-align:center;width:90px;" @change="${setHeight}">
-              </div>
-            <hr>
               <button :selected="${()=>!!persp.value}" @click="${togglePerspective}">perspective</button>
-          `}
-         </div>
+          </div>
+        `}
     </div>
 
   `

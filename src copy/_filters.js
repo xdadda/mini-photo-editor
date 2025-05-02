@@ -1,9 +1,6 @@
 import { html} from 'mini'
 import icon_shutter_rotate from './assets/icon_shutter_rotate.svg?raw'
 
-import section from './__section.js'
-
-
   const filtersLUT = [
     {type:'1',label:'aden', map1: async()=> import('./assets/LUT/LUT_aden.png')},
     {type:'1',label:'crema', map1: async()=> import('./assets/LUT/LUT_crema.png')},
@@ -27,19 +24,18 @@ import section from './__section.js'
     return img
   }
 
-export default function filters($selection, _params, onUpdate){
-  const params=_params.filters
+export default function filters($selection, handleSelection,  params,onUpdate){
 
   async function setFilter(id){
       id=id.replace('flt_','')
-      let t = setTimeout(()=>loader.style.display='',20) //show loader only if it's taking more than 20ms
+      const t = setTimeout(()=>loader.style.display='',20) //show loader only if it's taking more than 20ms
       const _f=filtersLUT[parseInt(id)]
       if(_f.map1 && typeof _f.map1==='function') _f.map1=await loadFilterLUT((await _f.map1()).default)
       if(_f.map2 && typeof _f.map2==='function') _f.map2=await loadFilterLUT((await _f.map2()).default)
       //await new Promise(r => setTimeout(r,1000))
       const {type,mtx,map1,map2,label} = _f
       params.opt={type,mtx,map1,map2,label}
-      if(t) clearTimeout(t)
+      clearTimeout(t)
       loader.style.display='none'
 
   }
@@ -50,7 +46,7 @@ export default function filters($selection, _params, onUpdate){
     //preview=false
     if(!selection || selection!==this.id){
       //select
-      filters_content.querySelector('[selected]')?.removeAttribute('selected');
+      instafilters.querySelector('[selected]')?.removeAttribute('selected');
       el.setAttribute('selected',true)
       btn_reset_filters?.removeAttribute('disabled')
       selection=this.id
@@ -68,9 +64,23 @@ export default function filters($selection, _params, onUpdate){
     }
   }
 
+  /*
+  let preview=false
+  async function previewFilter(){
+    if(selection) return
+    if(!preview){
+      preview=true
+      await setFilter(this.id)
+    } else {
+      preview=false
+      params.opt=0
+    }
+    onUpdate()
+  }
+  */
 
   function resetFilters(){
-    const instafilters=document.getElementById('filters_content')
+    const instafilters=document.getElementById('instafilters')
     btn_reset_filters?.setAttribute('disabled',true)
     instafilters?.querySelector('[selected]')?.removeAttribute('selected');
     params.opt=0
@@ -81,28 +91,28 @@ export default function filters($selection, _params, onUpdate){
 
   return html`
     <style>.btn_insta{width:70px;color: light-dark(white, white);}</style>
-    <style type="text/css">@keyframes animate { 0.00% {animation-timing-function: cubic-bezier(0.51,0.03,0.89,0.56);transform: translate(0.00px,0.00px) rotate(0.00deg) scale(1.00, 1.00) skew(0deg, 0.00deg) ;opacity: 1.00;}52.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(211.13deg) ;}100.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(360.00deg) ;} }</style>
+    
+    <div class="section" id="filters" :style="${()=>$selection.value==='filters'&&'height:235px;'}">
+        <div class="section_header" @click="${()=>handleSelection('filters')}">
+          <b class="section_label">filters</b>
 
-    ${section(
-      'filters',    //section name
-      235,          //section height
-      $selection,
-      _params, 
-      onUpdate,
-      resetFilters, 
-      ()=>html`<div >
-              <div id="loader" style="width:23px;fill: orange;display:none;position:absolute;top:-30px;">${icon_shutter_rotate}</div>
+            <style type="text/css">@keyframes animate { 0.00% {animation-timing-function: cubic-bezier(0.51,0.03,0.89,0.56);transform: translate(0.00px,0.00px) rotate(0.00deg) scale(1.00, 1.00) skew(0deg, 0.00deg) ;opacity: 1.00;}52.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(211.13deg) ;}100.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(360.00deg) ;} }</style>
+            <div id="loader" style="width:23px;fill: grey;display:none;">${icon_shutter_rotate}</div>
+
+          <a id="btn_reset_filters" class="reset_btn" @click="${()=>resetFilters()}" disabled title="reset">\u00D8</a>
+        </div>
+        ${()=>$selection.value==='filters' && html`
+          <div id="instafilters" style="font-size: 12px;">
+              <hr>
               ${filtersLUT.map((f,idx)=>html`
                 <button class="btn_insta" id="flt_${idx}" @click="${selectFilter}" selected="${params.opt?.label===f.label}">${f.label}</button>
-                `)}            
-          </div>`
-      )}
-  `
+                `)}
+          </div>
 
+        `}
+    </div>
+  `
 }
 
-
-
-
-
+//                <button class="btn_insta" id="flt_${idx}" @click="${selectFilter}" @mouseenter="${previewFilter}" @mouseleave="${previewFilter}" selected="${params.opt?.label===f.label}">${f.label}</button>
 

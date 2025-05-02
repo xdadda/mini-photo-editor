@@ -157,7 +157,7 @@ export default function Cropper(canvas, adj) {
     
     ////this is a UI hack, need to change a button outside of this component ... sorry
     function toggleResetComposition(){      
-      if(Object.values(trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0 && adj.resizer.width===0) btn_reset_comp.setAttribute('disabled',true)
+      if(Object.values(trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0) btn_reset_comp.setAttribute('disabled',true)
       else btn_reset_comp.removeAttribute('disabled')
     }
 

@@ -33,7 +33,7 @@ button, .btn {
   opacity: 0.8;
 }
   button[selected]{
-    border-color:#ff8c0080;
+    border-color:darkorange;
     opacity: 1;
   }
   button:focus{
