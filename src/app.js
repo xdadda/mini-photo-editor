@@ -26,6 +26,7 @@ import adjustments from './_adjustments.js'
 import curves from './_curves.js'
 import filters from './_filters.js'
 import blender from './_blender.js'
+import blur from './_blur.js'
 
 const initstate = {
   appname:'MiNi PhotoEditor',
@@ -35,6 +36,26 @@ import './app.css'
 import './editor.css'
 
 
+//////////////////////////////////////////////////
+    //keep this function pure
+    export function centerCanvas(){
+      const canvas = document.getElementById("canvas")
+      const editor = document.getElementById("editor")
+      //little trick to keep the canvas centered in container
+      const canvasAR = canvas.width/canvas.height
+      if(editor.offsetWidth/canvasAR > editor.offsetHeight) {
+        canvas.style.height='90%'
+        canvas.style.width=''
+      }
+      else {
+        canvas.style.width='90%'
+        canvas.style.height=''
+      }
+
+      //reset canvas position
+      zoomable.style.transform=''
+      pannable.style.transform=''
+    }
 //////////////////////////////////////////////////
 
 
@@ -55,7 +76,8 @@ export function App(){
       filters: { opt:0, mix:0 },
       perspective: {quad:0, modified:0},
       blender: {blendmap:0, blendmix:0.5},
-      resizer: {width:0, height:0}
+      resizer: {width:0, height:0},
+      blur: { bokehstrength:0, bokehlensout:0.5, centerX:0.5, centerY:0.5}
     }
 
   ///// INPUT FUNCTION (for future integrations)
@@ -197,6 +219,10 @@ export function App(){
       if(!params.curve.$skip && params.curve.curvepoints) _minigl.filterCurves(params.curve.curvepoints)
       if(!params.filters.$skip && params.filters.opt) _minigl.filterInsta(params.filters.opt,params.filters.mix)      
       
+      if(!params.blur.$skip && params.blur.bokehstrength) {
+        _minigl.filterBlurBokeh(params.blur)
+      }
+
       //draw to canvas
       _minigl.paintCanvas();
 
@@ -205,25 +231,6 @@ export function App(){
   /////////////////
 
   ///// CENTER CANVAS
-    function centerCanvas(){
-      const canvas = document.getElementById("canvas")
-      const editor = document.getElementById("editor")
-      //little trick to keep the canvas centered in container
-      const canvasAR = canvas.width/canvas.height
-      if(editor.offsetWidth/canvasAR > editor.offsetHeight) {
-        canvas.style.height='90%'
-        canvas.style.width=''
-      }
-      else {
-        canvas.style.width='90%'
-        canvas.style.height=''
-      }
-
-      //reset canvas position
-      zoomable.style.transform=''
-      pannable.style.transform=''
-    }
-
     function canvas_dblclick(e){
       e?.preventDefault()
       centerCanvas()
@@ -466,6 +473,9 @@ export function App(){
 
                 /******** BLENDER *******/
                 ${blender($selection, params, updateGL)}
+
+                /******** BLUR *******/
+                ${blur($selection, params, updateGL)}
 
               </div>
 

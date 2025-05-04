@@ -1,115 +1,36 @@
 import { html, onMount, onUnmount} from 'mini'
-
+import filterMouse from './filtermouse.js'
 
 export default function Quad(canvas, params, onUpdate){
 
-    onMount(()=>{
-      quadcontainer.addEventListener("pointerdown", dragstart);
-      quadcanvas.width=canvas.offsetWidth
-      quadcanvas.height=canvas.offsetHeight
-      w = canvas.offsetWidth
-      h = canvas.offsetHeight
-      c = quadcanvas.getContext('2d');
-      quadcontainer.style.width=w+'px'
-      quadcontainer.style.height=h+'px'
-      draw()
-      params.resetFn=reset
-    })
+    let zeropoints = [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
+    let initpoints = params?.quad || zeropoints
 
-    onUnmount(()=>{
-      quadcontainer.removeEventListener("pointerdown", dragstart);
-    })
-
-    let dragging=false
-    let pointselected
-    let points = params?.quad || [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
-    //let points = params?.quad || [[0,0], [1,0], [1,1], [0,1]]
-
-    const pointsize=10
-    let w, h, c, offset
-
-    function dragstop(e){
-      dragging=false
-      pointselected=undefined
-      quadcontainer.releasePointerCapture(e.pointerId)
-      quadcontainer.removeEventListener("pointermove", drag);
-      quadcontainer.removeEventListener("pointerup", dragstop);    
-
-    }
-
-    function dragstart(e){
-      dragging=true
-      params.modified=true
-      const el = document.elementFromPoint(e.x,e.y)
-      if(el.id.startsWith('qpt')) {
-        pointselected=parseInt(el.id.replace('qpt',''))
-      }
-      quadcontainer.setPointerCapture(e.pointerId)
-      quadcontainer.addEventListener("pointermove", drag);
-      quadcontainer.addEventListener("pointerup", dragstop);
-      const {left,top} = canvas.getBoundingClientRect()
-      offset = {left,top}
-    }
-
-    function clamp(min,val,max){
-      return Math.max(min, Math.min(max, val));
-    }
-
-    function drag(e){
-      if(dragging && pointselected!==undefined){
-
-        //limit point movements
-        var x = clamp(0,(e.offsetX) / w,1)
-        var y = clamp(0,(e.offsetY) / h,1)
-        points[pointselected] = [x,y]
-        draw()
-      }
-    }
-
-    function draw(){
-      if(!document.getElementById('qpt'+0)) return
-      //position draggable points
-      points.forEach((e,i)=>{
-        const pt = document.getElementById('qpt'+i)
-        pt.style.left=e[0]*w-pointsize/2+'px'
-        pt.style.top=e[1]*h-pointsize/2+'px'
-      })
-
-      c.fillStyle = "blue";
-      c.clearRect(0, 0, quadcanvas.width, quadcanvas.height);
-      c.lineWidth = 3;
-      c.strokeStyle = 'red';
-      c.beginPath();
+    function drawQuad(points, ctx){
+      ctx.clearRect(0, 0, mousecanvas.width, mousecanvas.height);
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'red';
+      ctx.beginPath();
       for (var i = 0; i < 4; i++) {
-          const x = points[i][0]*quadcanvas.width
-          const y = points[i][1]*quadcanvas.height
-          c.lineTo(x,y)
+          const x = points[i][0]*mousecanvas.width
+          const y = points[i][1]*mousecanvas.height
+          ctx.lineTo(x,y)
       }
-      c.closePath();
-      c.stroke();
-      if(params.quad!==undefined) params.quad=points //.map(e=>[e[0]*canvas.width,e[1]*canvas.height])
+      ctx.closePath();
+      ctx.stroke();
+      if(params.quad!==undefined) params.quad=points
       if(onUpdate) onUpdate()
     }
 
-    function reset(){
-      params.modified=false
-      points = [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
-      params.quad=points
-      draw()
+    function resetQuad(points){
+      return zeropoints
     }
 
 
   return html`
       <style>
-        #quadcontainer{position: absolute;}
-        #quadcanvas{width:inherit;height: inherit;overflow:hidden;border:0px solid white;background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);background-size: 9.99% 9.99%;}
-        .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;}
+        #mousecanvas{background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);background-size: 9.99% 9.99%;}
       </style>
-      <div id="quadcontainer" @dblclick="${reset}">
-        <canvas id="quadcanvas"></canvas>
-        ${points?.map((e,i)=>html`
-            <div id="qpt${i}" class="point"></div>
-          `)}
-      </div>
+      ${filterMouse(canvas, initpoints, drawQuad, resetQuad)}
   `
 }

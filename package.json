@@ -13,7 +13,7 @@
   "dependencies": {
     "@xdadda/mini": "^0.2.11",
     "@xdadda/mini-exif": "^0.2.0",
-    "@xdadda/mini-gl": "^0.1.11"
+    "@xdadda/mini-gl": "^0.1.12"
   },
   "devDependencies": {
     "rollup-plugin-minify-template-literals": "^1.1.7",

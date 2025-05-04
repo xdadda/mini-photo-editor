@@ -11,26 +11,30 @@ export default function adjustments($selection, params, onUpdate){
   }
   
   /////////////////////////////
+
+  ///// SECTION HANDLING FN ////////
+    function checkParamszero(section) {
+      return Object.values(params[section]).reduce((p,v)=>p+=v,0)===0
+    }
+    function resetParamsToZero(section) {
+      for (const key of Object.keys(params[section])) {
+        params[section][key]=0
+        updateParamCtrl(section+'_'+key)            
+      }
+    }
+
     function resetSection(section){
-      if(params[section].$skip) return
-      Object.keys(params[section]).forEach(e=>{
-        params[section][e]=0
-        updateParamCtrl(section+'_'+e)
-      })
+      resetParamsToZero(section)
       onUpdate()
       updateResetBtn(section)
     }
 
     function updateResetBtn(section){
-      //if all section's params are set to 0 disable reset
       const el=document.getElementById('btn_reset_'+section)
       if(!el) return
-      if(Object.values(params[section]).reduce((p,v)=>p+=v,0)===0){
-        el.setAttribute('disabled',true)
-      }
-      else {
-        el.removeAttribute('disabled')
-      }
+      //if all section's params are set to default values disable reset
+      if(checkParamszero(section)) el.setAttribute('disabled',true)
+      else el.removeAttribute('disabled')
     }
   /////////////////////////////
 
@@ -68,12 +72,12 @@ export default function adjustments($selection, params, onUpdate){
     ${['lights','colors','effects'].map(secname=>html`
 
         ${section(
-            secname, 
-            heights[secname], 
-            $selection, 
-            params, 
-            onUpdate,
-            ()=>resetSection(secname), 
+            secname,          //section's name
+            heights[secname], // section's height once open
+            $selection,       //signal with active sectioname, that opens/closes section
+            params,           //section's params obj of which $skip field will be set on/off
+            onUpdate,         //called when section is enabled/disabled
+            resetSection,     //section name provided to onReset
             ()=>html`
                     <div >
                       ${Object.keys(params[secname]).filter(e=>!e.startsWith('$')).map(e=>html`

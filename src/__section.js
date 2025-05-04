@@ -1,11 +1,11 @@
 import { html, reactive } from 'mini'
 
-export default function section(sectionname, height, $selection, params, onUpdate, onReset, sectionComponent){
+export default function section(sectionname, height, $selection, params, onEnable, onReset, sectionComponent){
 
 
     function resetSection(){
       if(params[sectionname].$skip) return
-      if(onReset) onReset()
+      if(onReset) onReset(sectionname)
     }
 
     function handleSkipSection(e){
@@ -16,19 +16,22 @@ export default function section(sectionname, height, $selection, params, onUpdat
       const el_div = document.getElementById(sectionname+'_content')
 
       if(!params[sectionname].$skip) {
+        //disable section
         params[sectionname].$skip=true
         el_btn?.setAttribute('disabled',true)
         el_sec?.setAttribute('skipped',true)
         el_div?.classList.add('skip')
+        onEnable(false)
       }
       else {
+        //enable section
         params[sectionname].$skip=false
         el_btn?.removeAttribute('disabled')
         el_sec?.removeAttribute('skipped')
         el_div?.classList.remove('skip')
         el_sec.style.opacity=''
+        onEnable(true)
       }
-      onUpdate()
     }
 
   return html`

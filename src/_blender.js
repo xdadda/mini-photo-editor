@@ -9,6 +9,7 @@ export default function blender($selection, _params, onUpdate){
   const blendname = reactive('')
 
   function resetBlender(){
+    if(params.$skip) return
     params.blendmap=0
     params.blendmix=0.5
     updateParamCtrl('blender_blendmix')
@@ -22,6 +23,7 @@ export default function blender($selection, _params, onUpdate){
     if(!img) return
     params.blendmap=img
     blendname.value=filedata?.name
+    params.blendmix=0.5
     disablerange.value=false
     if(onUpdate) onUpdate()
     updateResetBtn('blender')
