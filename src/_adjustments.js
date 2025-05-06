@@ -1,5 +1,6 @@
 import { html} from 'mini'
 import section from './__section.js'
+import {debounce} from './js/tools.js'
 
 
 export default function adjustments($selection, params, onUpdate){
@@ -40,6 +41,9 @@ export default function adjustments($selection, params, onUpdate){
 
 
   ///// RANGE INPUT FN ////////
+    function _setParam(e){
+      debounce('param',()=>setParam.call(this,e),30)
+    }
     function setParam(e){ //id= "section_field"
       const value = e.target.value
       const id = this.id.split('_')
@@ -54,7 +58,12 @@ export default function adjustments($selection, params, onUpdate){
       if(!el) return
       const id = _id.split('_')
       el.value=params[id[0]][id[1]]
-      el.nextElementSibling.value=el.value
+      if(id.length===3){//it's the number input
+        el.previousElementSibling.value=el.value
+      }
+      else {//it's the range input
+        el.nextElementSibling.value=el.value
+      }
     }
 
     function resetParamCtrl(){
@@ -78,19 +87,16 @@ export default function adjustments($selection, params, onUpdate){
             params,           //section's params obj of which $skip field will be set on/off
             onUpdate,         //called when section is enabled/disabled
             resetSection,     //section name provided to onReset
-            ()=>html`
-                    <div >
-                      ${Object.keys(params[secname]).filter(e=>!e.startsWith('$')).map(e=>html`
+            ()=>html`${Object.keys(params[secname]).filter(e=>!e.startsWith('$')).map(e=>html`
                           /* RANGE INPUTS */
                           <div style="display:flex;justify-content: space-around;align-items: center;">
                             <div class="rangelabel">${e}</div>
-                            <input id="${secname+'_'+e}"      type="range"  style="width:130px;"  value="${params[secname][e]}" min=-1 max=1 step=0.01 @input="${setParam}" @dblclick="${resetParamCtrl}">
-                            <input id="${secname+'_'+e+'_'}"  type="number" class="rangenumb"     value="${params[secname][e]}" min=-1 max=1 step=0.01 @input="${setParam}">
+                            <input id="${secname+'_'+e}"      type="range"  style="width:130px;"  value="${params[secname][e]}" min=-1 max=1 step=0.01 @input="${_setParam}" @dblclick="${resetParamCtrl}">
+                            <input id="${secname+'_'+e+'_'}"  type="number" class="rangenumb"     value="${params[secname][e]}" min=-1 max=1 step=0.01 @input="${_setParam}">
                           </div>
 
                       `)}
-                    </div>
-          `)}
+            `)}
 
 
 

@@ -64,18 +64,13 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
           adj['trs'][e]=0
           setTRSCtrl('trs_'+e)
         })
-        
-        Object.keys(adj['perspective']).forEach(e=>{
-          adj['perspective'][e]=0
-        })
 
         const fliph=document.getElementById('fliph')
         const flipv=document.getElementById('flipv')
         fliph.removeAttribute('selected')
         flipv.removeAttribute('selected')
 
-        //if(adj.perspective?.resetFn) adj.perspective.resetFn()
-        //persp.value=false
+        if(adj.perspective?.resetFn) adj.perspective.resetFn()
         hidePerspective()
 
         resetCropRect()
@@ -116,8 +111,8 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
 
     function updateResetBtn(){
       const flag = Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0 && adj.resizer.width===0
-      if(flag) btn_reset_composition.setAttribute('disabled',true)
-      else btn_reset_composition.removeAttribute('disabled')
+      if(flag) btn_reset_comp.setAttribute('disabled',true)
+      else btn_reset_comp.removeAttribute('disabled')
     }
 
     const ars=['free','pic','1:pic','1:1','4:3','16:9','3:4','9:16']
@@ -215,16 +210,16 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
 
   ///// PERSPECTIVE
     let persp=reactive(false)
-    //let perspel
+    let perspel
     async function showPerspective(){
-      persp.value=adj.perspective
-      //perspel = await render(plcquad,()=>Quad(canvas,adj.perspective,()=>{updateResetBtn();onUpdate()}))
+      persp.value=true
+      perspel = await render(plcquad,()=>Quad(canvas,adj.perspective,()=>{updateResetBtn();onUpdate()}))
       crop.style.display='none'
     }
     function hidePerspective(){
-      //if(!perspel) return
-      //perspel.destroy()
-      //perspel=undefined
+      if(!perspel) return
+      perspel.destroy()
+      perspel=undefined
       const crop=document.getElementById('crop')
       if(crop) crop.style.display='' //will be set by handleCrop
       persp.value=false
@@ -275,32 +270,25 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
 
   return html`
     <style>
-      #btn_skip_composition{
-        display:none;
+      .crop_btn {
+        width: 38px;
+        color: white;
+        padding: 0;
+        margin: 2px;
+        border-radius:50%;
+        fill: white;
+        stroke: white;
       }
     </style>
-    ${section(
-      'composition', 
-      235, 
-      $selection,       //signal with active sectioname, that opens/closes section
-      adj,              //section's params obj of which $skip field will be set on/off
-      null,             //called when section is enabled/disabled
-      resetComposition,     //section name provided to onReset
-      ()=>html`
-            <style>
-              .crop_btn {
-                width: 38px;
-                color: white;
-                padding: 0;
-                margin: 2px;
-                border-radius:50%;
-                fill: white;
-                stroke: white;
-              }
-              .close_btn {display:none !important;}
-            </style>
+    <div class="section" id="composition" :style="${()=>$selection.value==='composition'&&'height:235px;'}" :selected="${()=>$selection.value==='composition'}">
+        <div class="section_header" @click="${()=>$selection.value = 'composition'}">
+          <b class="section_label">composition</b>
+          <a id="btn_reset_comp" class="reset_btn" @click="${resetComposition}" disabled title="reset">\u00D8</a>
+        </div>
 
+          ${()=>$selection.value==='composition' && html`
             <button class="done_btn" @click="${()=>$selection.value=''}">done</button>
+            <hr>
               <div style="display:flex;justify-content: flex-end;color:grey; margin-right: 3px;">
                 <div style="flex: 1; align-content: center; text-align: left;">
                   <span>rotation </span>
@@ -329,11 +317,9 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
                 x 
                 <input id="resize_height" type="number" value="${canvas.height}" style="text-align:center;width:90px;" @change="${setHeight}">
               </div>
-
-            ${()=>persp.value && html`${Quad(canvas,persp.value,()=>{updateResetBtn();onUpdate()})}`}
-      `)}
-
-
+              
+          `}
+    </div>
 
   `
 }

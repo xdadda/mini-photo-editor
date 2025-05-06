@@ -1,8 +1,10 @@
 import { html, onMount, onUnmount} from 'mini'
+import {debounce} from '../js/tools.js'
 
-//canvas: canvas to "cover" with mouse grid
+//el: element to "cover" with mouse grid
 //initpoints: Array of points to map [[pt1_x,pt1_y],[...]]
-export default function filterMouse(canvas, initpoints, onUpdate, onReset){
+export default function canvasMouse(el, initpoints, onUpdate, onReset){
+
 
     onMount(()=>{
       mousecontainer.addEventListener("pointerdown", dragstart);
@@ -17,14 +19,15 @@ export default function filterMouse(canvas, initpoints, onUpdate, onReset){
     let dragging=false
     let pointselected
 
-    const pointsize=10
+    const pointsize=45
     let points = initpoints.slice(0) // [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
 
-    //position mousecontainer over canvas
-    const {top,left}=canvas.getBoundingClientRect()
-    let w = canvas.offsetWidth,
-        h = canvas.offsetHeight
+    //position mousecontainer over element
+    const {top,left}=el.getBoundingClientRect()
+    let w = el.offsetWidth,
+        h = el.offsetHeight
     let ctx, offset
+
 
     function dragstop(e){
       dragging=false
@@ -44,21 +47,24 @@ export default function filterMouse(canvas, initpoints, onUpdate, onReset){
       mousecontainer.setPointerCapture(e.pointerId)
       mousecontainer.addEventListener("pointermove", drag);
       mousecontainer.addEventListener("pointerup", dragstop);
-      const {left,top} = canvas.getBoundingClientRect()
+      const {left,top} = el.getBoundingClientRect()
       offset = {left,top}
+      mousePos(e)
     }
 
     function clamp(min,val,max){
       return Math.max(min, Math.min(max, val));
     }
-
-    function drag(e){
-      if(dragging && pointselected!==undefined){
+    function mousePos(e){
         //limit point movements
         var x = clamp(0,(e.offsetX) / w,1)
         var y = clamp(0,(e.offsetY) / h,1)
-        points[pointselected] = [x,y]
-        draw()
+        points[pointselected] = [x,y]      
+    }
+    function drag(e){
+      if(dragging && pointselected!==undefined){
+        mousePos(e)
+        debounce('mouse',()=>draw(),20)
       }
     }
 
@@ -83,12 +89,12 @@ export default function filterMouse(canvas, initpoints, onUpdate, onReset){
 
   return html`
       <style>
-        #mousecontainer{position: fixed;top:${top}px;left:${left}px;width:${w}px;height:${h}px}
-        #mousecanvas{width:inherit;height: inherit;overflow:hidden;border:0px solid white;}
-        .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;}
+        #mousecontainer{position: fixed;top:${top}px;left:${left}px;width:${w}px;height:${h}px;}
+        #mousecanvas{width:${w}px;height:${h}px;overflow:hidden;border:0px solid white;}
+        .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;border: 15px solid transparent;background-clip: padding-box;box-sizing: border-box;}
       </style>
-      <div id="mousecontainer" @dblclick="${reset}" width="${w}" height="${h}">
-        <canvas id="mousecanvas"></canvas>
+      <div id="mousecontainer" @dblclick="${reset}">
+        <canvas id="mousecanvas" width="${w}" height="${h}"></canvas>
         ${points?.map((e,i)=>html`
             <div id="mouse${i}" class="point" style="left:${e[0]*w}px;top:${e[1]*h}px;"></div>
           `)}

@@ -2,6 +2,7 @@ import { html, reactive } from 'mini'
 import clickdropFile from './components/clickdropFile.js'
 import { readImage } from './js/tools.js'
 import section from './__section.js'
+import {debounce} from './js/tools.js'
 
 export default function blender($selection, _params, onUpdate){
   const params = _params.blender
@@ -41,6 +42,9 @@ export default function blender($selection, _params, onUpdate){
   }
 
   ///// RANGE INPUT FN ////////
+      function _setParam(e){
+        debounce('param',()=>setParam.call(this,e),30)
+      }
       function setParam(e){ //id= "section_param"
       const value = e.target.value
       const id = this.id.split('_')
@@ -55,7 +59,12 @@ export default function blender($selection, _params, onUpdate){
       if(!el) return
       const id = _id.split('_')
       el.value=params[id[1]]
-      el.nextElementSibling.value=el.value
+      if(id.length===3){//it's the number input
+        el.previousElementSibling.value=el.value
+      }
+      else {//it's the range input
+        el.nextElementSibling.value=el.value
+      }
     }
 
     function resetParamCtrl(){
@@ -84,8 +93,8 @@ export default function blender($selection, _params, onUpdate){
                 /* RANGE INPUT */
                 <div style="display:flex;justify-content: space-around;align-items: center;">
                   <div class="rangelabel">blend mix</div>
-                  <input id="blender_blendmix" style="width:130px;" type="range" value="${params.blendmix}" min=0 max=1 step=0.01 @input="${setParam}" @dblclick="${resetParamCtrl}" :disabled="${()=>disablerange.value}"/>
-                  <input id="blender_blendmix_" type="number" class="rangenumb" step=0.01 min=0 max=1 value="${params.blendmix}" @input="${setParam}" :disabled="${()=>disablerange.value}">
+                  <input id="blender_blendmix" style="width:130px;" type="range" value="${params.blendmix}" min=0 max=1 step=0.01 @input="${_setParam}" @dblclick="${resetParamCtrl}" :disabled="${()=>disablerange.value}"/>
+                  <input id="blender_blendmix_" type="number" class="rangenumb" step=0.01 min=0 max=1 value="${params.blendmix}" @input="${_setParam}" :disabled="${()=>disablerange.value}">
                 </div>
               `
             }                

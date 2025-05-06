@@ -6,6 +6,7 @@ Online webgl2 photo editor
 
 ![Screenshot](screenshot.jpg)  
 
+100% privacy! images are edited locally in the browser, no uploads to backend server.
 
 Current features: 
 * Crop
@@ -18,7 +19,7 @@ Current features:
 * Color curves
 * Insta-like filters
 * Image blender
-* Bokeh blur
+* Bokeh/lens and gaussian blur
 * Split view before-after
 * Color histogram
 * Exif/Tiff/GPS info

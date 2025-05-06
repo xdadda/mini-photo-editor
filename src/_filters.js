@@ -75,13 +75,11 @@ export default function filters($selection, _params, onUpdate){
       _params, 
       onUpdate,
       resetFilters, 
-      ()=>html`<div >
-              <div id="loader" style="width:23px;fill: orange;display:none;position:absolute;top:-30px;">${icon_shutter_rotate}</div>
+      ()=>html`<div id="loader" style="width:23px;fill: orange;display:none;position:absolute;top:-30px;">${icon_shutter_rotate}</div>
               ${filtersLUT.map((f,idx)=>html`
                 <button class="btn_insta" @click="${()=>selectFilter(idx)}" :selected="${()=>selected.value===idx}">${f.label}</button>
                 `)}            
-          </div>`
-      )}
+      `)}
   `
 
 }

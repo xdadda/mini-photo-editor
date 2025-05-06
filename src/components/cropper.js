@@ -1,9 +1,10 @@
-import { html, onMount, onUnmount} from 'mini'
+import { html, reactive, onMount, onUnmount} from 'mini'
 import './cropper.css'
 
 export default function Cropper(canvas, adj, onUpdate) {
     const params = adj.crop
     const trs = adj.trs
+    const showtopbottom=reactive(true)
 
     onMount(()=>{
       resetCropRect(params.currentcrop)    
@@ -19,7 +20,7 @@ export default function Cropper(canvas, adj, onUpdate) {
     let crop_mouse_pos
     let _left,_right,_top,_bottom
     let box, rect
-    const hotspot=20, minsize=100
+    const hotspot=50, minsize=100
 
     function dragstop(e){
       dragging=false
@@ -45,8 +46,14 @@ export default function Cropper(canvas, adj, onUpdate) {
       crop.addEventListener("pointermove", drag);
       crop.addEventListener("pointerup", dragstop);
 
-      if(params.ar) croprect.style.aspectRatio=params.ar
-      else croprect.style.aspectRatio=''
+      if(params.ar) {
+        croprect.style.aspectRatio=params.ar
+        showtopbottom.value=false
+      }
+      else {
+        croprect.style.aspectRatio=''
+        showtopbottom.value=true
+      }
 
       crop_mouse_pos = {x:e.x, y:e.y}
       box=crop.getBoundingClientRect()
@@ -54,10 +61,10 @@ export default function Cropper(canvas, adj, onUpdate) {
 
       //CHECK POINTER pos vs hot spots
       const checkHotspot=(v)=>v>=0 && v<=hotspot
-      _left = checkHotspot(crop_mouse_pos.x-rect.left) //distance from left border
-      _right = checkHotspot(rect.right-crop_mouse_pos.x) //distance from right border
-      _top = checkHotspot(crop_mouse_pos.y-rect.top)
-      _bottom = checkHotspot(rect.bottom-crop_mouse_pos.y)
+      _left = checkHotspot(crop_mouse_pos.x-rect.left+10) //distance from left border
+      _right = checkHotspot(rect.right-crop_mouse_pos.x+10) //distance from right border
+      _top = checkHotspot(crop_mouse_pos.y-rect.top+10)
+      _bottom = checkHotspot(rect.bottom-crop_mouse_pos.y+10)
 
       //SET inset coordinates to avoid artifacts with 'auto' and aspectRatio
       croprect.style.top=croprect.offsetTop+'px'
@@ -152,18 +159,26 @@ export default function Cropper(canvas, adj, onUpdate) {
       }
       if(onUpdate) onUpdate(currentc||0)
     }
-    
+
+    let lastclick=0
+    function clickCropRect(e){
+      e.preventDefault()
+      //mobile can't intercept double-tap as a double click ... handle it here with a timer! yuk
+      if(lastclick && (Date.now()-lastclick)<200) return resetCropRect()
+      lastclick=Date.now()
+    }
+
 
   return html`
-      <div id="crop" @dblclick="${()=>resetCropRect()}">
+      <div id="crop" @dblclick="${()=>resetCropRect()}" @click="${clickCropRect}">
        <div id="croprect">
           <div class="cropcorner" id="top_left" ></div>
           <div class="cropcorner" id="top_right" ></div>
           <div class="cropcorner" id="bottom_left" ></div>
           <div class="cropcorner" id="bottom_right" ></div>
-          <div class="cropcorner" id="left" ></div>
-          <div class="cropcorner" id="right" ></div>
-          ${!params.ar && `
+          ${()=>showtopbottom.value && html`
+            <div class="cropcorner" id="left" ></div>
+            <div class="cropcorner" id="right" ></div>
             <div class="cropcorner" id="top" ></div>
             <div class="cropcorner" id="bottom" ></div>
           `}

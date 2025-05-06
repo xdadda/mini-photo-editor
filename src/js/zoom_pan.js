@@ -37,7 +37,7 @@ export {handlePointer, zoom_pan}
       // If two pointers are down, check for pinch gestures
       else if (evCache.length === 2) {
         // Calculate the distance between the two pointers
-        const curDiff = Math.abs(evCache[0].pageX - evCache[1].pageX);
+        const curDiff = Math.abs(evCache[0].x - evCache[1].x);
         if (prevDiff > 0) {
           let deltaDiff = curDiff-prevDiff //if >0 zoom in, <0 zoom out
           if(firstpinch) {
@@ -90,6 +90,7 @@ export {handlePointer, zoom_pan}
   */
   function zoomOnPointer(el, p, delta, factor, min_scale, max_scale){
     if(!el.style.transformOrigin) el.style.transformOrigin='0 0'
+
     //get current position and scale
     let pos=el.style.transform.match(/translate\((.*?)\)/)?.[1].split(',').map(e=>parseFloat(e)) || [0,0]
     let scale=el.style.transform.match(/scale\((.*?)\)/)?.[1].split(',').map(e=>parseFloat(e))[0] || 1
@@ -98,6 +99,7 @@ export {handlePointer, zoom_pan}
     zoom_point.x = p.x - el.parentElement.offsetLeft
     zoom_point.y = p.y - el.parentElement.offsetTop
     delta = Math.max(-1,Math.min(1,delta/10)) // cap the delta to [-1,1] for cross browser consistency
+    if(!delta) return //critical in Safari apparently
     // determine the point on where the el is zoomed in
     zoom_target.x = (zoom_point.x - pos[0])/scale
     zoom_target.y = (zoom_point.y - pos[1])/scale

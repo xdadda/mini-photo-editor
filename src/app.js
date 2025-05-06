@@ -3,11 +3,16 @@ import { html, reactive, onMount, onUnmount} from 'mini'
 import { alert } from 'mini/components'
 import 'mini/components.css'
 import store from 'mini/store'
+import './app.css'
+import './editor.css'
 
 import miniExif from 'mini-exif'
 import { minigl} from 'mini-gl'
 import logo from './assets/icon.png'
 import github from './assets/icon_github.png'
+import icon_split from './assets/icon_split.svg?raw'
+import icon_histo from './assets/icon_histo.svg?raw'
+import icon_info from './assets/icon_info.svg?raw'
 
 import { zoom_pan } from './js/zoom_pan.js'
 import { readImage, downloadFile, filesizeString } from './js/tools.js'
@@ -32,8 +37,6 @@ const initstate = {
   appname:'MiNi PhotoEditor',
 }
 
-import './app.css'
-import './editor.css'
 
 
 //////////////////////////////////////////////////
@@ -77,7 +80,7 @@ export function App(){
       perspective: {quad:0, modified:0},
       blender: {blendmap:0, blendmix:0.5},
       resizer: {width:0, height:0},
-      blur: { bokehstrength:0, bokehlensout:0.5, centerX:0.5, centerY:0.5}
+      blur: { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, gaussianlensout:0.5, centerX:0.5, centerY:0.5},
     }
 
   ///// INPUT FUNCTION (for future integrations)
@@ -222,6 +225,10 @@ export function App(){
       if(!params.blur.$skip && params.blur.bokehstrength) {
         _minigl.filterBlurBokeh(params.blur)
       }
+      if(!params.blur.$skip && params.blur.gaussianstrength) {
+        params.blur.gaussianlensout = params.blur.bokehlensout
+        _minigl.filterBlurGaussian(params.blur)
+      }
 
       //draw to canvas
       _minigl.paintCanvas();
@@ -243,10 +250,15 @@ export function App(){
       if(lastclick && (Date.now()-lastclick)<200) return canvas_dblclick(e)
       lastclick=Date.now()
     }
+    function sidebar_click(e){
+      e.preventDefault()
+      $selection.value=''      
+    }
   /////////////////
 
   ///// INFO
-    async function showInfo(){
+    async function showInfo(e){
+      e?.stopPropagation()
       const meta = $file.value
       await alert(()=>html`
           <div style="text-align:left;font-size:12px;max-height:50vh;overflow:auto;">
@@ -318,8 +330,8 @@ export function App(){
     function onCropUpdate(){
       ////this is a UI hack, need to change a button inside Composition component ... sorry
       //toggle btn_reset_comp
-      if(Object.values(params.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params.crop).reduce((p,v)=>p+=v,0)===0 && params.perspective.modified==0 && params.resizer.width===0) btn_reset_comp.setAttribute('disabled',true)
-      else btn_reset_comp.removeAttribute('disabled')
+      if(Object.values(params.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params.crop).reduce((p,v)=>p+=v,0)===0 && params.perspective.modified==0 && params.resizer.width===0) btn_reset_composition.setAttribute('disabled',true)
+      else btn_reset_composition.removeAttribute('disabled')
     }
   /////////////////
 
@@ -327,7 +339,8 @@ export function App(){
     let updateHistogram  //will receive the "updateHisto" function from the component
     const $showhisto=reactive(false)
 
-    function toggleHisto(){
+    function toggleHisto(e){
+      e?.stopPropagation()
       if(cropping) return
       if($showhisto.value) $showhisto.value=false
       else $showhisto.value=true
@@ -344,7 +357,8 @@ export function App(){
     function hideSplitView(){
       $showsplit.value = false
     }
-    function toggleSplitView(){
+    function toggleSplitView(e){
+      e?.stopPropagation()
       if(cropping) return
       if($showsplit._value) $showsplit.value = false
       else {
@@ -360,7 +374,7 @@ export function App(){
   ///// SAMPLE IMAGES
     async function samples(){
       await alert((handleClose)=>html`
-          <div style="height:250px">
+          <div style="position:relative;height:250px;overflow:auto;">
             <img id="snail.jpg" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:20px;border-radius:10px;" src="/samples/snail-8577681_1280.jpg" title="jpg" width=130>
             <img id="seagull.png" @click="${openSample}" style="cursor:pointer;position:absolute;top:50px;left:160px;border-radius:10px;" src="/samples/seagull-8547189_1280.png" title="png" width=150>
             <img id="water.jpg" @click="${openSample}" style="cursor:pointer;position:absolute;top:145px;left:160px;border-radius:10px;" src="/samples/water-8100724_1280.jpg" title="jpg" width=150>
@@ -391,6 +405,7 @@ export function App(){
     }
     document.addEventListener("fullscreenchange", detectFullScreen)
   /////////////////
+
 
   return html`
     <div class="app" >
@@ -438,48 +453,48 @@ export function App(){
                     /******** CROP CANVAS *******/
                     ${()=>$selection.value==='composition' && Cropper(canvas, params, onCropUpdate)}
 
-                    /******** PERSPECTIVE point of render *******/
-                    <div id="plcquad" style="display: contents;"></div>
 
                   </div>
                 </div>
               </div>
 
-              <div class="sidebar">
+              <div class="sidebar" @click="${sidebar_click}">
 
-                <div>
-                  ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded),'width:120px;')}
-                  <button style="width:120px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl)}}">download</button>
+                <div class="menubuttons">
+                  <div style="display: flex;align-items: center;justify-content: center;">
+                    ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded),'width:105px;height:30px;')}
+                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl)}}">download</button>
+                  </div>
+
+                  <div style="display: flex;align-items: center;justify-content: center;">
+                    <button style="width:70px;height:30px;fill:white;" id="btn_info" @click="${showInfo}" title="file info"><div style="scale:0.35;margin-top: -15px;">${icon_info}</div></button>
+                    <button style="width:70px;height:30px;fill:white;" id="btn_histo" @click="${toggleHisto}" :selected="${()=>$showhisto.value}" tile="histogram"><div style="scale:0.4;margin-top: -15px;">${icon_histo}</div></button>
+                    <button style="width:70px;height:30px;fill:white;" id="btn_split" @click="${toggleSplitView}" :selected="${()=>$showsplit.value}" tile="splitview"><div style="scale:0.5;margin-top: -15px;">${icon_split}</div></button>
+                  </div>
                 </div>
+                <div class="menusections">
 
-                <div>
-                  <button style="width:70px;" id="btn_info" @click="${showInfo}">info</button>
-                  <button style="width:70px;" id="btn_histo" @click="${toggleHisto}" :selected="${()=>$showhisto.value}">histo</button>
-                  <button style="width:70px;" id="btn_split" @click="${toggleSplitView}" :selected="${()=>$showsplit.value}">split</button>
-                  <br>
+                  /******** COMPOSITION *******/
+                  ${composition($selection, params, updateGL, ()=>_minigl, centerCanvas)}
+
+                  /******** ADJUSTMENTS *******/
+                  ${adjustments($selection, params, updateGL)}
+
+                  /******** COLOR CURVE *******/
+                  ${curves($selection, params, updateGL)}
+
+                  /******** FILTERS *******/
+                  ${filters($selection, params, updateGL)}
+
+                  /******** BLENDER *******/
+                  ${blender($selection, params, updateGL)}
+
+                  /******** BLUR *******/
+                  ${blur($selection, params, updateGL)}
                 </div>
-
-                /******** COMPOSITION *******/
-                ${composition($selection, params, updateGL, ()=>_minigl, centerCanvas)}
-
-                /******** ADJUSTMENTS *******/
-                ${adjustments($selection, params, updateGL)}
-
-                /******** COLOR CURVE *******/
-                ${curves($selection, params, updateGL)}
-
-                /******** FILTERS *******/
-                ${filters($selection, params, updateGL)}
-
-                /******** BLENDER *******/
-                ${blender($selection, params, updateGL)}
-
-                /******** BLUR *******/
-                ${blur($selection, params, updateGL)}
 
               </div>
-
-            <div>
+            </div>
           
             /******** HISTOGRAM *******/
             ${()=>$showhisto.value && Histogram($file._value.colorspace, (fn)=>{updateHistogram=fn;updateGL();})}

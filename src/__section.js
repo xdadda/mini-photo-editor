@@ -4,7 +4,7 @@ export default function section(sectionname, height, $selection, params, onEnabl
 
 
     function resetSection(){
-      if(params[sectionname].$skip) return
+      if(params[sectionname]?.$skip) return
       if(onReset) onReset(sectionname)
     }
 
@@ -35,17 +35,20 @@ export default function section(sectionname, height, $selection, params, onEnabl
     }
 
   return html`
-    <div class="section" id="${sectionname}" :style="${()=>$selection.value===sectionname&&`height:${height}px;`}" :selected="${()=>$selection.value===sectionname}">
-        <div class="section_header" @click="${()=>$selection.value=sectionname}">
+    <div class="section" id="${sectionname}" :style="${()=>$selection.value===sectionname&&`height:${height}px;`}" :selected="${()=>$selection.value===sectionname}" @click="${(e)=>{e.stopPropagation();$selection.value=sectionname}}">
+        <div class="section_header" >
           <a id="btn_skip_${sectionname}" class="section_skip" @click="${handleSkipSection}" title="toggle">\u2609</a>
           <b class="section_label">${sectionname}</b>
           <a id="btn_reset_${sectionname}" class="reset_btn" @click="${resetSection}" disabled title="reset">\u00D8</a>
         </div>
 
         ${()=>$selection.value===sectionname && html`
-          <div id="${sectionname}_content" class="${params[sectionname]?.$skip?'skip':''}" style="position:relative;">
-            <hr>
-            ${sectionComponent}
+          <div id="${sectionname}_content" class="section_content ${params[sectionname]?.$skip?'skip':''}" @click="${(e)=>e.stopPropagation()}">
+            <div class="section_scroll">
+              <hr>
+              <button class="close_btn" @click="${()=>$selection.value=''}">X</button>
+              ${sectionComponent}
+            </div>
           </div>
         `}
     </div>`

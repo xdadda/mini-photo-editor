@@ -1,11 +1,12 @@
 import { html, onMount, onUnmount} from 'mini'
-import filterMouse from './filtermouse.js'
+import canvasMouse from './canvasmouse.js'
 
 export default function Quad(canvas, params, onUpdate){
 
     let zeropoints = [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
     let initpoints = params?.quad || zeropoints
 
+    let firstdraw=true
     function drawQuad(points, ctx){
       ctx.clearRect(0, 0, mousecanvas.width, mousecanvas.height);
       ctx.lineWidth = 3;
@@ -18,11 +19,14 @@ export default function Quad(canvas, params, onUpdate){
       }
       ctx.closePath();
       ctx.stroke();
-      if(params.quad!==undefined) params.quad=points
+      if(firstdraw) firstdraw=false
+      else if(!params.modified) params.modified=true
+      params.quad=points
       if(onUpdate) onUpdate()
     }
 
     function resetQuad(points){
+      params.modified=false
       return zeropoints
     }
 
@@ -31,6 +35,6 @@ export default function Quad(canvas, params, onUpdate){
       <style>
         #mousecanvas{background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);background-size: 9.99% 9.99%;}
       </style>
-      ${filterMouse(canvas, initpoints, drawQuad, resetQuad)}
+      ${canvasMouse(canvas, initpoints, drawQuad, resetQuad)}
   `
 }

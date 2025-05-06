@@ -1,11 +1,12 @@
 import { html, reactive, onMount, onUnmount} from 'mini'
 import {Spline} from 'mini-gl'
 import './colorcurve.css'
+import { debounce } from '../js/tools.js'
 
 export default function CC(curve, onUpdate){
 
     const size=256
-    const pointsize=10
+    const pointsize=45
     const numpoints = reactive(curve?.numpoints || 5)
 
     let colorspace = curve?.space || 0  //0=all, 1=R, 2=G, 3=B,
@@ -87,7 +88,6 @@ export default function CC(curve, onUpdate){
       curvecontainer.releasePointerCapture(e.pointerId)
       curvecontainer.removeEventListener("pointermove", drag);
       curvecontainer.removeEventListener("pointerup", dragstop);    
-
       pointselected=undefined
     }
 
@@ -104,24 +104,27 @@ export default function CC(curve, onUpdate){
       if(el.id.startsWith('pt')) {
         pointselected=parseInt(el.id.replace('pt',''))
       }
+      modified[colorspace]=true 
+      mousePos(e)
     }
 
     function clamp(min,val,max){
       return Math.max(min, Math.min(max, val));
     }
-
-    function drag(e){
-      if(dragging && pointselected!==undefined){
-
+    function mousePos(e){
         //limit point movements
         const minx = pointselected ? points[colorspace][pointselected-1][0]+0.1 : 0
         const maxx = pointselected<numpoints._value-1 ? points[colorspace][pointselected+1][0]-0.1 : 1
         var x = clamp(minx,(e.offsetX) / w,maxx)
         var y = clamp(0,1 - (e.offsetY) / h,1)
-
         points[colorspace][pointselected] = [x,y]
-        modified[colorspace]=true 
-        draw()
+    }
+
+
+    function drag(e){
+      if(dragging && pointselected!==undefined){
+        mousePos(e)
+        debounce('curve',()=>draw(),20)
       }
     }
 
@@ -161,12 +164,12 @@ export default function CC(curve, onUpdate){
 
   return html`
       <style>
-        #curvecontainer{position: relative;width:200px;height: 130px;margin:auto;background-image: radial-gradient(#5b5b5b 1px, transparent 0);background-size: 10% 10%;border-radius: 10px;border: 1px solid #5b5b5b;}
+        #curvecontainer{position: relative;width:200px;height: 120px;margin:auto;background-image: radial-gradient(#5b5b5b 1px, transparent 0);background-size: 10% 10%;border-radius: 10px;border: 1px solid #5b5b5b;}
         #curvescanvas{width:inherit;height: inherit;overflow:hidden;border:0px solid white;}
-        .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;}
+        .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;border: 17px solid transparent;background-clip: padding-box;box-sizing: border-box;}
       </style>
-      <div id="cccolors" style="display:flex;flex-direction:row">
-        <div style="width:40px;">
+      <div id="cccolors" style="display:flex;flex-direction:row; max-width:275px;">
+        <div style="width:60px;">
           <button id="space0" @click="${setColorSpace}" class="clrspace selected" style="border-color:white;" title="all colors"></button>
           <button id="space1" @click="${setColorSpace}" class="clrspace" style="border-color:#c13119;" title="red"></button>
           <button id="space2" @click="${setColorSpace}" class="clrspace" style="border-color:#0c9427;" title="green"></button>

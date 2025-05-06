@@ -23,47 +23,47 @@
 
 #croprect div{
   position:absolute;
-  width:15px;height:15px;
+  width:40px;height:40px;
   border-color: light-dark(black,white);
   border-style: solid;
 }
   #croprect #top_left{
-    top:-2px;left:-2px;
+    top:0px;left:0px;
     border-width: 3px 0px 0px 3px;
     cursor: nwse-resize;
   }
   #croprect #top_right{
-    top:-2px;right:-2px;
+    top:0px;right:0px;
     border-width: 3px 3px 0px 0px;
     cursor: nesw-resize;
   }
   #croprect #bottom_right{
-    bottom:-2px;right:-2px;
+    bottom:0px;right:0px;
     border-width: 0px 3px 3px 0px;
     cursor: nwse-resize;
   }
   #croprect #bottom_left{
-    bottom:-2px;left:-2px;
+    bottom:0px;left:0px;
     border-width: 0px 0px 3px 3px;
     cursor: nesw-resize;
   }
   #croprect #top{
-    top:-2px;right:calc(50% - 5px);
+    top:0px;right:calc(50% - 20px);
     border-width: 3px 0px 0px 0px;
     cursor: ns-resize;
   }
   #croprect #bottom{
-    bottom:-2px;right:calc(50% - 5px);
+    bottom:0px;right:calc(50% - 20px);
     border-width: 0px 0px 3px 0px;
     cursor: ns-resize;
   }
   #croprect #left{
-    top:calc(50% - 5px);left:-2px;
+    top:calc(50% - 20px);left:0px;
     border-width: 0px 0px 0px 3px;
     cursor: ew-resize;
   }
   #croprect #right{
-    top:calc(50% - 5px);right:-2px;
+    top:calc(50% - 20px);right:0px;
     border-width: 0px 3px 0px 0px;
     cursor: ew-resize;
   }

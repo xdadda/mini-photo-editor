@@ -37,12 +37,12 @@ export default function curves($selection, _params, onUpdate){
   return html`
     ${section(
       'curve', 
-      175, //height 
+      190, //height 
       $selection, 
       _params, 
       onUpdate,
       resetCurve, 
-      ()=>html`<div >
+      ()=>html`<div class="cc_container">
               ${()=>CC(curve,setCurve)}
           </div>`
       )}

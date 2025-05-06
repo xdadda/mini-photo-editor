@@ -1,18 +1,20 @@
 import { html, reactive } from 'mini'
 import section from './__section.js'
-import filterMouse from './components/filtermouse.js'
+import {debounce} from './js/tools.js'
+import canvasMouse from './components/canvasmouse.js'
 import {centerCanvas} from './app.js'
 
 export default function blur($selection, params, onUpdate){
   
-    const paramszero = { bokehstrength:0, bokehlensout:0.5, centerX:0.5, centerY:0.5}
+    const paramszero = { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, centerX:0.5, centerY:0.5}
     //first setup
     if(!checkParamszero('blur')) resetParamsToZero('blur')
 
     const showmouse=reactive(false)
     reactive(()=>{
       if($selection.value==='blur'){
-        showmouse.value=true
+        showmouse.value=[[params.blur.centerX,params.blur.centerY]]
+        centerCanvas()
       }
       else {
         showmouse.value=false
@@ -49,7 +51,7 @@ export default function blur($selection, params, onUpdate){
       updateResetBtn(section)
       //switch mousefilter on/off to update position .. bit hacky but for now it works
       showmouse.value=false 
-      showmouse.value=true
+      showmouse.value=[[params.blur.centerX,params.blur.centerY]]
     }
 
     function updateResetBtn(section){
@@ -68,6 +70,9 @@ export default function blur($selection, params, onUpdate){
   /////////////////////////////
 
   ///// RANGE INPUT FN ////////
+    function _setParam(e){
+      debounce('param',()=>setParam.call(this,e),30)
+    }
     function setParam(e){ //id= "section_field"
       const value = e.target.value
       const id = this.id.split('_')
@@ -82,7 +87,12 @@ export default function blur($selection, params, onUpdate){
       if(!el) return
       const id = _id.split('_')
       el.value=params[id[0]][id[1]]
-      el.nextElementSibling.value=el.value
+      if(id.length===3){//it's the number input
+        el.previousElementSibling.value=el.value
+      }
+      else {//it's the range input
+        el.nextElementSibling.value=el.value
+      }
     }
 
     function resetParamCtrl(){
@@ -99,28 +109,26 @@ export default function blur($selection, params, onUpdate){
   return html`
     ${section(
       'blur', 
-      150, 
+      125, 
       $selection,       //signal with active sectioname, that opens/closes section
       params,           //section's params obj of which $skip field will be set on/off
       onEnableSection,  //called when section is enabled/disabled
       resetSection,     //section name provided to onReset
-      ()=>html`<div >
-                /* mouse canvas */
+      ()=>html` /* mouse canvas */
                 <style>.point{background-color:red !important;border:2px solid darkorange;}</style>
-                ${()=>showmouse.value && filterMouse(canvas,[[params.blur.centerX,params.blur.centerY]],onMouseMove)}
+                ${()=>showmouse.value && canvasMouse(canvas,showmouse.value,onMouseMove)}
 
-                ${['bokehstrength','bokehlensout'].filter(e=>!e.startsWith('$')).map((e,idx)=>html`
+                ${['bokehstrength','gaussianstrength','bokehlensout'].filter(e=>!e.startsWith('$')).map((e,idx)=>html`
                     /* RANGE INPUTS */
                     <div style="display:flex;justify-content: space-around;align-items: center;">
-                      <div class="rangelabel">${['strength','radius'][idx]}</div>
-                      <input id="${'blur'+'_'+e}"      type="range"  style="width:130px;"  value="${params['blur'][e]}" min=0 max=1 step=0.01 @input="${setParam}" @dblclick="${resetParamCtrl}">
-                      <input id="${'blur'+'_'+e+'_'}"  type="number" class="rangenumb"     value="${params['blur'][e]}" min=0 max=1 step=0.01 @input="${setParam}">
+                      <div class="rangelabel">${['bokeh strength','gauss strength','cirble radius'][idx]}</div>
+                      <input id="${'blur'+'_'+e}"      type="range"  style="width:130px;"  value="${params['blur'][e]}" min=0 max=1 step=0.01 @input="${_setParam}" @dblclick="${resetParamCtrl}">
+                      <input id="${'blur'+'_'+e+'_'}"  type="number" class="rangenumb"     value="${params['blur'][e]}" min=0 max=1 step=0.01 @input="${_setParam}">
                     </div>
 
                 `)}
-                <div style="text-align:left;color:gray;"><i>* experimental bokeh filter (center red dot)</i></div>
-          </div>`
-      )}
+                <div style="text-align:left;color:gray;"><i>(center red dot)</i></div>
+      `)}
   `
 }
 

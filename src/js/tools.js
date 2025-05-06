@@ -1,14 +1,15 @@
 import { alert } from 'mini/components'
 
 //////// DEBOUNCE //////////////////////
-  const timerids = new Map();
-  export function debounce(cb,delay=100){
-    if(timerids.has(cb)) {
-      clearTimeout(timerids.get(cb))
-      timerids.delete(cb)
+  export const timerids = new Map();
+  export function debounce(id,cb,delay=100){
+    if(timerids.has(id)) {
+      //console.log('debouncing,...',id)
     }
-    const timerid = setTimeout(()=>cb(),delay)
-    timerids.set(cb,timerid)
+    else {
+      const t = setTimeout(()=>{cb();timerids.delete(id);},delay)
+      timerids.set(id,t)      
+    }
   }
 ////////////////////////////////////////
 
