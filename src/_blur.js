@@ -5,7 +5,7 @@ import canvasMouse from './components/canvasmouse.js'
 import {centerCanvas} from './app.js'
 
 export default function blur($selection, params, onUpdate){
-  
+
     const paramszero = { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, centerX:0.5, centerY:0.5}
     //first setup
     if(!checkParamszero('blur')) resetParamsToZero('blur')
@@ -18,6 +18,7 @@ export default function blur($selection, params, onUpdate){
       }
       else {
         showmouse.value=false
+        if($selection.value===null) updateResetBtn('blur')
       }
     },{effect:true})
 

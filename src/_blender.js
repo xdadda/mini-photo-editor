@@ -22,6 +22,7 @@ export default function blender($selection, _params, onUpdate){
 
   function onBlend(arrayBuffer, filedata, img){
     if(!img) return
+    img.filename = filedata?.name
     params.blendmap=img
     blendname.value=filedata?.name
     params.blendmix=0.5

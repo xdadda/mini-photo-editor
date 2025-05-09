@@ -29,18 +29,32 @@ import section from './__section.js'
 
 export default function filters($selection, _params, onUpdate){
   const params=_params.filters
+
   let selected=reactive(false)
 
-  async function setFilter(id){
-      let t = setTimeout(()=>loader.style.display='',20) //show loader only if it's taking more than 20ms
-      const _f=filtersLUT[parseInt(id)]
+  reactive(async()=>{
+    if($selection.value===null) {
+      //load from recipe
+      if(_params.filters?.label) {
+        const idx = filtersLUT.findIndex(e=>e.label===_params.filters.label)
+        selectFilter(idx)
+      }
+    }
+  },{effect:true})
+
+
+  async function setFilter(idx){
+      const loader = document.getElementById('loader')
+      let t 
+      if(loader) setTimeout(()=>loader.style.display='',20) //show loader only if it's taking more than 20ms
+      const _f=filtersLUT[parseInt(idx)]
       if(_f.map1 && typeof _f.map1==='function') _f.map1=await loadFilterLUT((await _f.map1()).default)
       if(_f.map2 && typeof _f.map2==='function') _f.map2=await loadFilterLUT((await _f.map2()).default)
       //await new Promise(r => setTimeout(r,1000))
       const {type,mtx,map1,map2,label} = _f
       params.opt={type,mtx,map1,map2,label}
       if(t) clearTimeout(t)
-      loader.style.display='none'
+      if(loader) loader.style.display='none'
   }
 
   async function selectFilter(idx){
@@ -65,7 +79,7 @@ export default function filters($selection, _params, onUpdate){
   }
 
   return html`
-    <style>.btn_insta{width:70px;color: light-dark(white, white);}</style>
+    <style>.btn_insta{width:70px;color: light-dark(white, white); font-size: 12px;}</style>
     <style type="text/css">@keyframes animate { 0.00% {animation-timing-function: cubic-bezier(0.51,0.03,0.89,0.56);transform: translate(0.00px,0.00px) rotate(0.00deg) scale(1.00, 1.00) skew(0deg, 0.00deg) ;opacity: 1.00;}52.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(211.13deg) ;}100.00% {animation-timing-function: cubic-bezier(0.17,0.39,0.55,0.91);transform: translate(0.00px,0.00px) rotate(360.00deg) ;} }</style>
 
     ${section(

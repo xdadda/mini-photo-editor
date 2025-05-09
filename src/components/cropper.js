@@ -6,6 +6,7 @@ export default function Cropper(canvas, adj, onUpdate) {
     const trs = adj.trs
     const showtopbottom=reactive(true)
 
+
     onMount(()=>{
       resetCropRect(params.currentcrop)    
       crop.addEventListener("pointerdown", dragstart);
@@ -143,8 +144,8 @@ export default function Cropper(canvas, adj, onUpdate) {
 
     function resetCropRect(currentc){
       const crop = document.getElementById('crop')
-      crop.style.width= Math.round(canvas.getBoundingClientRect().width)+'px'
-      crop.style.height = Math.round(canvas.getBoundingClientRect().height)+'px'
+      crop.style.width= Math.round(canvas.offsetWidth)+'px'
+      crop.style.height = Math.round(canvas.offsetHeight)+'px'
 
       if(params.ar) croprect.style.aspectRatio=params.ar
       else croprect.style.aspectRatio=''
@@ -170,8 +171,8 @@ export default function Cropper(canvas, adj, onUpdate) {
 
 
   return html`
-      <div id="crop" @dblclick="${()=>resetCropRect()}" @click="${clickCropRect}">
-       <div id="croprect">
+      <div id="crop" @dblclick="${()=>resetCropRect()}" @click="${clickCropRect}" style="width:${canvas?.offsetWidth}px;height:${canvas?.offsetHeight}px">
+       <div id="croprect" style="inset:0;">
           <div class="cropcorner" id="top_left" ></div>
           <div class="cropcorner" id="top_right" ></div>
           <div class="cropcorner" id="bottom_left" ></div>

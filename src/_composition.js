@@ -1,4 +1,4 @@
-import { render, html, reactive, onMount } from 'mini'
+import { html, reactive, onMount } from 'mini'
 import icon_rotate from './assets/icon_rotate.svg?raw'
 import icon_flip from './assets/icon_flip.svg?raw'
 import icon_skew from './assets/icon_skew.svg?raw'
@@ -274,11 +274,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
   /////////////////
 
   return html`
-    <style>
-      #btn_skip_composition{
-        display:none;
-      }
-    </style>
     ${section(
       'composition', 
       235, 
@@ -296,6 +291,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
                 border-radius:50%;
                 fill: white;
                 stroke: white;
+                font-size: 12px;
               }
               .close_btn {display:none !important;}
             </style>
@@ -331,6 +327,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
               </div>
 
             ${()=>persp.value && html`${Quad(canvas,persp.value,()=>{updateResetBtn();onUpdate()})}`}
+
       `)}
 
 

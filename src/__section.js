@@ -1,5 +1,7 @@
 import { html, reactive } from 'mini'
 
+
+//Note: if onEnable notdefined/null the enable/disable button will not be visible
 export default function section(sectionname, height, $selection, params, onEnable, onReset, sectionComponent){
 
 
@@ -37,9 +39,9 @@ export default function section(sectionname, height, $selection, params, onEnabl
   return html`
     <div class="section" id="${sectionname}" :style="${()=>$selection.value===sectionname&&`height:${height}px;`}" :selected="${()=>$selection.value===sectionname}" @click="${(e)=>{e.stopPropagation();$selection.value=sectionname}}">
         <div class="section_header" >
-          <a id="btn_skip_${sectionname}" class="section_skip" @click="${handleSkipSection}" title="toggle">\u2609</a>
+          ${!!onEnable && html`<a id="btn_skip_${sectionname}" class="section_skip" @click="${handleSkipSection}" title="toggle">\u2609</a>`}
           <b class="section_label">${sectionname}</b>
-          <a id="btn_reset_${sectionname}" class="reset_btn" @click="${resetSection}" disabled title="reset">\u00D8</a>
+          ${!!onReset && html`<a id="btn_reset_${sectionname}" class="reset_btn" @click="${resetSection}" disabled title="reset">\u00D8</a>`}
         </div>
 
         ${()=>$selection.value===sectionname && html`

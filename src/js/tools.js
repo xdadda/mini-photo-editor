@@ -27,7 +27,7 @@ import { alert } from 'mini/components'
       input.remove();
       if(ev.type==='cancel') return
       const file = ev.target.files[0];
-      if(!file) return await alert('File not recognized!')
+      if(!file) return await alert('Unsupported file format!')
       //if(file.size>60*1024*1024) return await alert('Upload files smaller than 60MB!')
       return file
     } catch(error){

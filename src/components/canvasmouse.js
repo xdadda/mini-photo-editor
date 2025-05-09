@@ -5,6 +5,18 @@ import {debounce} from '../js/tools.js'
 //initpoints: Array of points to map [[pt1_x,pt1_y],[...]]
 export default function canvasMouse(el, initpoints, onUpdate, onReset){
 
+    const pointsize=45
+    let points = initpoints.slice(0) // [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
+
+    //position mousecontainer over element
+    const {top,left}=el.getBoundingClientRect()
+    let w = el.offsetWidth,
+        h = el.offsetHeight
+    let ctx, offset
+
+    let dragging=false
+    let pointselected
+
 
     onMount(()=>{
       mousecontainer.addEventListener("pointerdown", dragstart);
@@ -16,24 +28,22 @@ export default function canvasMouse(el, initpoints, onUpdate, onReset){
       mousecontainer.removeEventListener("pointerdown", dragstart);
     })
 
-    let dragging=false
-    let pointselected
-
-    const pointsize=45
-    let points = initpoints.slice(0) // [[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
-
-    //position mousecontainer over element
-    const {top,left}=el.getBoundingClientRect()
-    let w = el.offsetWidth,
-        h = el.offsetHeight
-    let ctx, offset
+    function clamp(min,val,max){
+      return Math.max(min, Math.min(max, val));
+    }
+    function mousePos(e){
+        //limit point movements
+        var x = clamp(0,(e.offsetX) / w,1)
+        var y = clamp(0,(e.offsetY) / h,1)
+        points[pointselected] = [x,y]      
+    }
 
 
     function dragstop(e){
       dragging=false
       pointselected=undefined
       mousecontainer.releasePointerCapture(e.pointerId)
-      mousecontainer.removeEventListener("pointermove", drag);
+      mousecontainer.removeEventListener("pointermove", dragmove);
       mousecontainer.removeEventListener("pointerup", dragstop);    
 
     }
@@ -45,23 +55,14 @@ export default function canvasMouse(el, initpoints, onUpdate, onReset){
         pointselected=parseInt(el.id.replace('mouse',''))
       }
       mousecontainer.setPointerCapture(e.pointerId)
-      mousecontainer.addEventListener("pointermove", drag);
+      mousecontainer.addEventListener("pointermove", dragmove);
       mousecontainer.addEventListener("pointerup", dragstop);
       const {left,top} = el.getBoundingClientRect()
       offset = {left,top}
       mousePos(e)
     }
 
-    function clamp(min,val,max){
-      return Math.max(min, Math.min(max, val));
-    }
-    function mousePos(e){
-        //limit point movements
-        var x = clamp(0,(e.offsetX) / w,1)
-        var y = clamp(0,(e.offsetY) / h,1)
-        points[pointselected] = [x,y]      
-    }
-    function drag(e){
+    function dragmove(e){
       if(dragging && pointselected!==undefined){
         mousePos(e)
         debounce('mouse',()=>draw(),20)
@@ -73,8 +74,10 @@ export default function canvasMouse(el, initpoints, onUpdate, onReset){
       //position draggable points
       points.forEach((e,i)=>{
         const pt = document.getElementById('mouse'+i)
-        pt.style.left=e[0]*w-pt.offsetWidth/2+'px'
-        pt.style.top=e[1]*h-pt.offsetHeight/2+'px'
+        const left = e[0]*w-pt.offsetWidth/2+'px'
+        const top = e[1]*h-pt.offsetHeight/2+'px'
+        if(pt.style.left!==left) pt.style.left=left
+        if(pt.style.top!==top) pt.style.top=top
       })
 
       if(onUpdate) onUpdate(points,ctx)
@@ -90,13 +93,13 @@ export default function canvasMouse(el, initpoints, onUpdate, onReset){
   return html`
       <style>
         #mousecontainer{position: fixed;top:${top}px;left:${left}px;width:${w}px;height:${h}px;}
-        #mousecanvas{width:${w}px;height:${h}px;overflow:hidden;border:0px solid white;}
-        .point{position:absolute;background-color: white; width: ${pointsize}px;height: ${pointsize}px; border-radius: 50%;cursor:pointer;border: 15px solid transparent;background-clip: padding-box;box-sizing: border-box;}
+        #mousecanvas{overflow:hidden;border:0px solid white;}
+        .point{position:absolute;width: ${pointsize}px;height: ${pointsize}px;background-color:white; border-radius: 50%;cursor:pointer;border: 15px solid transparent;background-clip: padding-box;box-sizing: border-box;}
       </style>
       <div id="mousecontainer" @dblclick="${reset}">
         <canvas id="mousecanvas" width="${w}" height="${h}"></canvas>
         ${points?.map((e,i)=>html`
-            <div id="mouse${i}" class="point" style="left:${e[0]*w}px;top:${e[1]*h}px;"></div>
+            <div id="mouse${i}" style="left:${e[0]*w-pointsize/2}px;top:${e[1]*h-pointsize/2}px;" class="point" ></div>
           `)}
       </div>
   `

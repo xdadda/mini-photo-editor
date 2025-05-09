@@ -27,11 +27,13 @@ import downloadImage from './components/downloadImage.js'
 
 
 import composition from './_composition.js'
+//import perspective from './_perspective.js'
 import adjustments from './_adjustments.js'
 import curves from './_curves.js'
 import filters from './_filters.js'
 import blender from './_blender.js'
 import blur from './_blur.js'
+import recipes from './_recipes.js'
 
 const initstate = {
   appname:'MiNi PhotoEditor',
@@ -47,11 +49,11 @@ const initstate = {
       //little trick to keep the canvas centered in container
       const canvasAR = canvas.width/canvas.height
       if(editor.offsetWidth/canvasAR > editor.offsetHeight) {
-        canvas.style.height='90%'
+        canvas.style.height='99%'
         canvas.style.width=''
       }
       else {
-        canvas.style.width='90%'
+        canvas.style.width='99%'
         canvas.style.height=''
       }
 
@@ -78,6 +80,7 @@ export function App(){
       curve: {curvepoints: 0},
       filters: { opt:0, mix:0 },
       perspective: {quad:0, modified:0},
+      perspective2: {before:0, after:0, modified:0},
       blender: {blendmap:0, blendmix:0.5},
       resizer: {width:0, height:0},
       blur: { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, gaussianlensout:0.5, centerX:0.5, centerY:0.5},
@@ -180,8 +183,16 @@ export function App(){
       //load image's texture
       _minigl.loadImage()
 
+    if(params.perspective2.after) {
+        let before = params.perspective2.before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+        let after = params.perspective2.after.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
+        _minigl.filterPerspective(before,after, false, false)
+    }
+
+
       // TRANSLATE/ROTATE/SCALE filter
       if(cropping || params.crop.glcrop){
+
 
         params.trs.angle+=params.crop.canvas_angle
         _minigl.filterMatrix(params.trs)
@@ -194,6 +205,7 @@ export function App(){
           let after = (params.perspective.quad).map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
           _minigl.filterPerspective(before,after, false, false)
         }
+
 
       }
 
@@ -477,6 +489,8 @@ export function App(){
                   /******** COMPOSITION *******/
                   ${composition($selection, params, updateGL, ()=>_minigl, centerCanvas)}
 
+                  /******** PERSPECTIVE *******/
+
                   /******** ADJUSTMENTS *******/
                   ${adjustments($selection, params, updateGL)}
 
@@ -491,6 +505,10 @@ export function App(){
 
                   /******** BLUR *******/
                   ${blur($selection, params, updateGL)}
+
+                  /******** RECIPES *******/
+                  ${recipes($selection, params, updateGL)}
+
                 </div>
 
               </div>
@@ -510,6 +528,9 @@ export function App(){
   `
 }
 
+/*
+                  ${perspective($selection, params, updateGL)}
+*/
 
 
 

@@ -1,4 +1,4 @@
-import { html} from 'mini'
+import { html, reactive } from 'mini'
 import section from './__section.js'
 import {debounce} from './js/tools.js'
 
@@ -10,6 +10,13 @@ export default function adjustments($selection, params, onUpdate){
     colors:150,
     effects:105
   }
+
+  reactive(()=>{
+    if($selection.value===null) {
+      //app has been reset, new values loaded
+      ['lights','colors','effects'].forEach(s=>updateResetBtn(s))
+    }
+  },{effect:true})
   
   /////////////////////////////
 
