@@ -7,6 +7,7 @@ body {
   margin: 0;
   user-select: none;
   -webkit-user-select: none;
+  height: 100vh;
 }
 
 a {
@@ -118,7 +119,7 @@ input, select{
 /****************** COLOR SCHEME ******************/
 /**************************************************/
 
-#root {
+#root,body {
   color: light-dark(#213547,rgba(255, 255, 255, 0.87));
   background-color: light-dark(#ffffff,#191919);
 }
