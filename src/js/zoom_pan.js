@@ -8,6 +8,7 @@ export {handlePointer, zoom_pan}
     let firstpinch=true; //avoids strange behaviour where first pinch/zoom is always wrong direction
 
     const start      = (ev) => {
+      ev.preventDefault();ev.stopPropagation();
       evCache.push(ev);
       onStart&&onStart({el,ev});
       _x=ev.clientX;_y=ev.clientY;
@@ -24,6 +25,7 @@ export {handlePointer, zoom_pan}
     }
     const move      = (ev) => {
       if(!evCache.length) return
+      ev.preventDefault();ev.stopPropagation();
       //update event cache
       const index = evCache.findIndex(
         (cachedEv) => cachedEv.pointerId === ev.pointerId,
@@ -58,7 +60,7 @@ export {handlePointer, zoom_pan}
     const wheel     = (ev) => onZoom&&onZoom({el,ev,zoom:ev.deltaY/100});
 
     el.addEventListener("pointerdown", dragStart);
-    el.addEventListener("pointermove", drag);
+    el.addEventListener("pointermove", drag, { passive: false });
     el.addEventListener("pointerup", dragEnd);
     if(!disableleave){
       el.addEventListener("pointercancel", dragEnd);
