@@ -52,7 +52,9 @@ export {handlePointer, zoom_pan}
       }
 
     }
-    const prevent = (ev) => ev.preventDefault();
+    const prevent = (ev) => {
+      if(ev.touches.length===2) ev.preventDefault();
+    }
 
     const dragStart = (ev) => {/*el.setPointerCapture(ev.pointerId); */start(ev);}
     const drag      = (ev) => /*el.hasPointerCapture(ev.pointerId) && */move(ev);
