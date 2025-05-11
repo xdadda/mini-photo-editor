@@ -44,6 +44,7 @@ export {handlePointer, zoom_pan}
             firstpinch=false
             deltaDiff*=-1            
           }
+          ev.preventDefault();
           onPinch&&onPinch({el, ev0:evCache[0], ev1:evCache[1], diff:deltaDiff})
         }
         // Cache the distance for the next move event
@@ -51,6 +52,7 @@ export {handlePointer, zoom_pan}
       }
 
     }
+    const prevent = (ev) => ev.preventDefault();
 
     const dragStart = (ev) => {/*el.setPointerCapture(ev.pointerId); */start(ev);}
     const drag      = (ev) => /*el.hasPointerCapture(ev.pointerId) && */move(ev);
@@ -64,7 +66,9 @@ export {handlePointer, zoom_pan}
       el.addEventListener("pointercancel", dragEnd);
       el.addEventListener("pointerout", dragEnd);
     }
-    el.addEventListener("pointerleave", dragEnd);      
+    el.addEventListener("pointerleave", dragEnd);
+    el.addEventListener('touchstart', prevent); //to disable default safari zoom/pinch
+
     if(onZoom) el.addEventListener("wheel", wheel, { passive: false });
     return ()=>{
       //console.log('removing listeners')
@@ -76,6 +80,7 @@ export {handlePointer, zoom_pan}
         el.removeEventListener("pointerout", dragEnd);
       }
       el.removeEventListener("pointerleave", dragEnd);
+      el.removeEventListener("touchstart", prevent);
       if(onZoom) el.removeEventListener("wheel", wheel);      
     }
   }
