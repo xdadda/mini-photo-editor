@@ -1,5 +1,4 @@
 import { alert } from 'mini/components'
-
 //////// DEBOUNCE //////////////////////
   export const timerids = new Map();
   export function debounce(id,cb,delay=100){
@@ -76,3 +75,24 @@ import { alert } from 'mini/components'
   }
 
 ////////////////////////////////////////
+
+
+  //NOTE: it will not work in IOS Safari if not behind https!! so no localhost but don't worry
+  export const shareBlob = async (filename, blob) => {
+    console.log(filename)
+    const data = {
+      files: [
+        new File([blob], filename, {
+          type: blob.type,
+        }),
+      ],
+    };
+    try {
+      if (!navigator.canShare || !(navigator.canShare(data))) {
+        throw new Error("Can't share data.");
+      }
+      await navigator.share(data);
+    } catch (err) {
+      if(err.message !== 'Share canceled') console.error(err.name,'>', err.message);
+    }
+  }

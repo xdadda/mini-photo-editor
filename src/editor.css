@@ -307,7 +307,7 @@
     left: 0px;
     width: 100%;
     color: transparent;
-    background-color: #242424;
+    background-color: light-dark(#c2c2c2, #242424);;
   }
   
   .section_content hr:first-child{

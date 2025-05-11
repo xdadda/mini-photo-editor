@@ -50,4 +50,3 @@ export default function ThemeToggle(start='auto',noauto=false){
   </div>`
 }
 
-//        ${()=>store('thememode').value==='auto' ?'\u273B':(store('thememode').value==='dark'?'\u263E':'\u273A')}

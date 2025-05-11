@@ -433,7 +433,7 @@ export function App(){
               ${clickdropFile('click or drop<br> to load file','image/*',(file)=>readImage(file, onImageLoaded),'height: 120px;')}
               <button style="height: 80px;width:80px;" @click="${samples}">sample images</button>
             </div>
-            <div style="font-size:13px;color:gray;"><i>images are edited locally<br>no data is sent anywhere</i></div>
+            <div style="font-size:13px;color:gray;margin-top:20px;"><i>100% private and offline!<br>100% free and opensource <a style="font-size: 10px;" href="https://github.com/xdadda/mini-photo-editor" target="_blank"><img src="${github}" style="width:15px;"></a></i></div>
         </div>
       `}
 

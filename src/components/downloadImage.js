@@ -1,5 +1,9 @@
 import { html, reactive } from 'mini'
 import { confirm } from 'mini/components'
+import { shareBlob } from '../js/tools.js'
+
+import isMobile from 'ismobilejs';
+
 import miniExif from 'mini-exif'
 
     async function base64ToArrayBuffer(dataURL) {
@@ -75,6 +79,9 @@ export default async function downloadImage($file,_exif,_minigl){
           //[Note: some HEIC viewers don't use EXIF Orientation but HEIC 'irot' data! ]
           if(meta?.tiff?.Orientation) _newexif.patch({area:'tiff',field:'Orientation',value:1})          
         }
-        _newexif.download(newfilename.value)
+
+        const mob = isMobile(window.navigator).any;
+        if(mob) shareBlob(newfilename.value,new Blob([_newexif.image()]))
+        else _newexif.download(newfilename.value)
       }
     }
