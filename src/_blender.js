@@ -1,4 +1,4 @@
-import { html, reactive } from 'mini'
+import { html, reactive } from '@xdadda/mini'
 import clickdropFile from './components/clickdropFile.js'
 import { readImage } from './js/tools.js'
 import section from './__section.js'

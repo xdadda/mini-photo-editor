@@ -1,4 +1,4 @@
-import { html, onMount, onUnmount } from 'mini'
+import { html, onMount, onUnmount } from '@xdadda/mini'
 
 import Worker from './histogram_worker.js?worker'
 import {handlePointer} from '../js/zoom_pan.js'

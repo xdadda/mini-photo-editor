@@ -1,5 +1,5 @@
-import { html, reactive, onMount, onUnmount} from 'mini'
-import {Spline} from 'mini-gl'
+import { html, reactive, onMount, onUnmount} from '@xdadda/mini'
+import {Spline} from '@xdadda/mini-gl'
 import './colorcurve.css'
 import { debounce } from '../js/tools.js'
 

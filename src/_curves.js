@@ -1,4 +1,4 @@
-import { html, reactive } from 'mini'
+import { html, reactive } from '@xdadda/mini'
 import CC from './components/colorcurve.js'
 
 import section from './__section.js'

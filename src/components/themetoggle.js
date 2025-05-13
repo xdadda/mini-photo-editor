@@ -1,5 +1,5 @@
-import { html, reactive} from 'mini'
-import store from 'mini/store'
+import { html, reactive} from '@xdadda/mini'
+import store from '@xdadda/mini/store'
 
 
     function toggleMode(noauto){

@@ -1,4 +1,4 @@
-import { html, reactive } from 'mini'
+import { html, reactive } from '@xdadda/mini'
 
 
 //Note: if onEnable notdefined/null the enable/disable button will not be visible

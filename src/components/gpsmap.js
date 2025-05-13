@@ -1,4 +1,4 @@
-import { html, onMount, onUnmount} from 'mini'
+import { html, onMount, onUnmount} from '@xdadda/mini'
 
 //////// GPS MAP ///////////////////////
 

@@ -1,4 +1,4 @@
-import { html, onMount, onUnmount} from 'mini'
+import { html, onMount, onUnmount} from '@xdadda/mini'
 import './splitview.css'
 
 export default function SplitView(image, stylewidth, styleheight, splitwidth, onUpdate) {

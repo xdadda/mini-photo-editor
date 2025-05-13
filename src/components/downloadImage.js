@@ -1,10 +1,10 @@
-import { html, reactive } from 'mini'
-import { confirm } from 'mini/components'
+import { html, reactive } from '@xdadda/mini'
+import { confirm } from '@xdadda/mini/components'
 import { shareBlob } from '../js/tools.js'
 
 import isMobile from 'ismobilejs';
 
-import miniExif from 'mini-exif'
+import miniExif from '@xdadda/mini-exif'
 
     async function base64ToArrayBuffer(dataURL) {
         const arr = dataURL.split(',');
@@ -16,7 +16,7 @@ import miniExif from 'mini-exif'
     }
 
 
-export default async function downloadImage($file,_exif,_minigl){
+export default async function downloadImage($file,_exif,_minigl, onSave){
         const meta = $file.value;
         const filename=meta.file.name
         const newfilename=reactive(filename)
@@ -80,8 +80,13 @@ export default async function downloadImage($file,_exif,_minigl){
           if(meta?.tiff?.Orientation) _newexif.patch({area:'tiff',field:'Orientation',value:1})          
         }
 
-        const mob = isMobile(window.navigator).any;
-        if(mob) shareBlob(newfilename.value,new Blob([_newexif.image()]))
-        else _newexif.download(newfilename.value)
+        if(!onSave) {
+          const mob = isMobile(window.navigator).any;
+          if(mob) shareBlob(newfilename.value,new Blob([_newexif.image()]))
+          else _newexif.download(newfilename.value)          
+        }
+        else {
+          onSave(newfilename.value,_newexif.image())
+        }
       }
     }

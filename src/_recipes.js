@@ -1,5 +1,5 @@
-import { html, reactive } from 'mini'
-import { confirm } from 'mini/components'
+import { html, reactive } from '@xdadda/mini'
+import { confirm } from '@xdadda/mini/components'
 import section from './__section.js'
 import {openFile, downloadFile} from './js/tools.js'
 

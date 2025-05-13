@@ -1,6 +1,5 @@
-"use strict";
-import { render } from 'mini'
-import {App} from './app.js'
+import { render } from '@xdadda/mini'
+import {Editor} from './app.js'
 import './main.css'
 
-await render( document.getElementById('root'), App ) //CSR
+await render( document.getElementById('root'), Editor ) //CSR

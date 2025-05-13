@@ -1,4 +1,4 @@
-import { html, reactive } from 'mini'
+import { html, reactive } from '@xdadda/mini'
 import section from './__section.js'
 import {debounce} from './js/tools.js'
 import canvasMouse from './components/canvasmouse.js'

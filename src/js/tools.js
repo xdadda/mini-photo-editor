@@ -1,4 +1,4 @@
-import { alert } from 'mini/components'
+import { alert } from '@xdadda/mini/components'
 //////// DEBOUNCE //////////////////////
   export const timerids = new Map();
   export function debounce(id,cb,delay=100){

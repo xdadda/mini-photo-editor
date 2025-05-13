@@ -1,4 +1,4 @@
-import { html, onMount, onUnmount} from 'mini'
+import { html, onMount, onUnmount} from '@xdadda/mini'
 import canvasMouse from './canvasmouse.js'
 
 export default function Quad(canvas, params, onUpdate){

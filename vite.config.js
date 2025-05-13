@@ -9,10 +9,6 @@ return {
       ],
     resolve: {
       alias: [
-        //{find: "@", replacement: new URL("./src", import.meta.url).pathname},
-        {find: 'mini', replacement: '@xdadda/mini'},
-        {find: 'mini-gl', replacement: '@xdadda/mini-gl'},
-        {find: 'mini-exif', replacement: '@xdadda/mini-exif'},
       ],
     },
     build: {
@@ -25,7 +21,7 @@ return {
       
       rollupOptions: {
         output: {
-          manualChunks: { mini: ['mini'] } 
+          manualChunks: { mini: ['@xdadda/mini'] } 
         }
       }
       

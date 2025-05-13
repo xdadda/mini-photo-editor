@@ -22,8 +22,6 @@
   height: 38px;
   line-height: 38px;
   z-index: 2;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: auto hidden;

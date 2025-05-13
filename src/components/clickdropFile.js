@@ -1,5 +1,5 @@
-import { html } from 'mini'
-import { alert } from 'mini/components'
+import { html } from '@xdadda/mini'
+import { alert } from '@xdadda/mini/components'
 
 import { openFile } from '../js/tools.js'
 

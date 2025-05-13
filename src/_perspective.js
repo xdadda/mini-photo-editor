@@ -1,4 +1,4 @@
-import { html, reactive, onMount } from 'mini'
+import { html, reactive, onMount } from '@xdadda/mini'
 import section from './__section.js'
 import Perspective from './components/perspective2.js'
 

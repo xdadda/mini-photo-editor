@@ -1,4 +1,4 @@
-import { html, onMount, onUnmount} from 'mini'
+import { html, onMount, onUnmount} from '@xdadda/mini'
 import {debounce} from '../js/tools.js'
 
 //el: element to "cover" with mouse grid

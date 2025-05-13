@@ -1,13 +1,13 @@
 
-import { html, reactive, onMount, onUnmount} from 'mini'
-import { alert } from 'mini/components'
-import 'mini/components.css'
-import store from 'mini/store'
+import { html, reactive, onMount, onUnmount} from '@xdadda/mini'
+import { alert } from '@xdadda/mini/components'
+import '@xdadda/mini/components.css'
+import store from '@xdadda/mini/store'
 import './app.css'
 import './editor.css'
 
-import miniExif from 'mini-exif'
-import { minigl} from 'mini-gl'
+import miniExif from '@xdadda/mini-exif'
+import { minigl} from '@xdadda/mini-gl'
 import logo from './assets/icon.png'
 import github from './assets/icon_github.png'
 import icon_split from './assets/icon_split.svg?raw'
@@ -18,6 +18,9 @@ import { zoom_pan } from './js/zoom_pan.js'
 import { readImage, downloadFile, filesizeString } from './js/tools.js'
 
 import ThemeToggle from './components/themetoggle.js'
+import FullScreen from './components/fullscreen.js'
+
+
 import Histogram from './components/histogram.js'
 import GPSMap from './components/gpsmap.js'
 import Cropper from './components/cropper.js'
@@ -64,8 +67,9 @@ const initstate = {
 //////////////////////////////////////////////////
 
 
-export function App(){
-  store(initstate)
+export function Editor(input=null,sample=true){
+  if(!store('appname')) store(initstate) //editor standalone
+  //console.log('EDITOR',store())
 
   let _exif, _minigl, zp
   const $file = reactive(false)
@@ -86,7 +90,7 @@ export function App(){
       blur: { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, gaussianlensout:0.5, centerX:0.5, centerY:0.5},
     }
 
-  ///// INPUT FUNCTION (for future integrations)
+  ///// INPUT/SAVE FUNCTIONs (for future integrations)
     //@input: Image, Blob, ArrayBuffer, url  it's an image feeded programmatically
     async function openInput(input, name){
       if(!input) return
@@ -121,6 +125,8 @@ export function App(){
       }
       catch(e){console.error(e)}
     }
+    if(store('editor')) input=store('editor')
+    if(input) openInput(input.url,input.name)
   /////////////////
 
   ///// SETUP
@@ -402,22 +408,6 @@ export function App(){
     }
   ///////////////// 
 
-  ///// FULLSCREEN
-    async function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
-      } else if (document.exitFullscreen) {
-        await document.exitFullscreen();
-      }
-    }
-    function detectFullScreen() {
-      //when in/out fullscreen reset view to ensure proper UI alignments
-      $selection.value=''
-      centerCanvas();
-    }
-    document.addEventListener("fullscreenchange", detectFullScreen)
-  /////////////////
-
 
   return html`
     <div class="app" >
@@ -431,7 +421,7 @@ export function App(){
             <h1> ${store('appname')} </h1>
             <div>
               ${clickdropFile('click or drop<br> to load file','image/*',(file)=>readImage(file, onImageLoaded),'height: 120px;')}
-              <button style="height: 80px;width:80px;" @click="${samples}">sample images</button>
+              ${sample && html`<button style="height: 80px;width:80px;" @click="${samples}">sample images</button>`}
             </div>
             <div style="font-size:13px;color:gray;margin-top:20px;"><i>100% private and offline!<br>100% free and opensource <a style="font-size: 10px;" href="https://github.com/xdadda/mini-photo-editor" target="_blank"><img src="${github}" style="width:15px;"></a></i></div>
         </div>
@@ -440,14 +430,16 @@ export function App(){
 
       /******** EDITOR PAGE ********/
       ${()=>$file.value && html`
-        <div class="btn_fullscreen"><a @click="${toggleFullScreen}">\u26F6</a></div>
+        <div class="btn_fullscreen">${()=>FullScreen(null)}</div>
 
-        <div class="header">
-          <div class="banner">
-            <img src="${logo}" width=30 alt="logo"/> ${store('appname')}
+        ${!input ? html`
+          <div class="header">
+            <div class="banner">
+              <img src="${logo}" width=30 alt="logo"/> ${store('appname')}
+            </div>
           </div>
-        </div>
-  
+        ` : `<div class="header" style="backdrop-filter: unset;"></div>`}
+
         <div class="main">
 
             <div class="container">
@@ -474,8 +466,13 @@ export function App(){
 
                 <div class="menubuttons">
                   <div style="display: flex;align-items: center;justify-content: center;">
-                    ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded),'width:105px;height:30px;')}
-                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl)}}">download</button>
+                    ${!input && html`
+                      ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded),'width:105px;height:30px;')}
+                    `}
+                    ${!!input && html`
+                      <button style="width:105px;height:30px;" @click="${()=>input.cb()}">cancel</button>
+                    `}
+                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl,input?.cb||null)}}">download</button>
                   </div>
 
                   <div style="display: flex;align-items: center;justify-content: center;">

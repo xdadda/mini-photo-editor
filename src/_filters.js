@@ -1,4 +1,4 @@
-import { html, reactive } from 'mini'
+import { html, reactive } from '@xdadda/mini'
 import icon_shutter_rotate from './assets/icon_shutter_rotate.svg?raw'
 
 import section from './__section.js'

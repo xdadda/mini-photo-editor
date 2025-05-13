@@ -1,4 +1,4 @@
-import { html, reactive, onMount } from 'mini'
+import { html, reactive, onMount } from '@xdadda/mini'
 import icon_rotate from './assets/icon_rotate.svg?raw'
 import icon_flip from './assets/icon_flip.svg?raw'
 import icon_skew from './assets/icon_skew.svg?raw'

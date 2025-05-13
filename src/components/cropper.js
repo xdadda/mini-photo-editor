@@ -1,4 +1,4 @@
-import { html, reactive, onMount, onUnmount} from 'mini'
+import { html, reactive, onMount, onUnmount} from '@xdadda/mini'
 import './cropper.css'
 
 export default function Cropper(canvas, adj, onUpdate) {
