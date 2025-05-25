@@ -2,6 +2,7 @@
 *.lock
 node_modules
 dist
+lib
 dist-ssr
 *.local
 .env*

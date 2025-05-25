@@ -1,17 +1,18 @@
 {
-  "name": "mini_editor",
+  "name": "mini-img-editor",
   "version": "0.1.1",
   "description": "",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5174 --host 0.0.0.0",
     "build": "vite build",
+    "buildlib": "vite build --config libvite.config.js",
     "serve": "vite preview"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@xdadda/mini": "^0.2.12",
+    "@xdadda/mini": "^0.2.13",
     "@xdadda/mini-exif": "^0.2.2",
     "@xdadda/mini-gl": "^0.1.14",
     "ismobilejs": "^1.1.1"
@@ -21,6 +22,10 @@
     "vite": "^6.2.2"
   },
   "exports": {
-    ".": "./src/app.js"
+    ".": {
+      "import": "./lib/mini-img-editor.js",
+      "require": "./lib/mini-img-editor.umd.cjs"
+    },
+    "./styles.css": "./lib/mini-img-editor.css"
   }
 }

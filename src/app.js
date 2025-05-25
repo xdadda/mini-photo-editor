@@ -1,7 +1,7 @@
 
 import { html, reactive, onMount, onUnmount} from '@xdadda/mini'
 import { alert } from '@xdadda/mini/components'
-import '@xdadda/mini/components.css'
+//import '@xdadda/mini/components.css'
 import store from '@xdadda/mini/store'
 import './app.css'
 import './editor.css'
@@ -65,11 +65,16 @@ const initstate = {
       pannable.style.transform=''
     }
 //////////////////////////////////////////////////
-
-
-export function Editor(input=null,sample=true){
-  if(!store('appname')) store(initstate) //editor standalone
-  //console.log('EDITOR',store())
+/*
+input = {
+    "url": "http://127.0.0.1:5170/api/$streamfile?file=%2Fexif.png",
+    "name": "exif.png"
+}
+*/
+export function Editor(input=false){
+  store(initstate)
+  let sample=true
+  if(input?.sample===false) sample=false
 
   let _exif, _minigl, zp
   const $file = reactive(false)
@@ -91,28 +96,30 @@ export function Editor(input=null,sample=true){
     }
 
   ///// INPUT/SAVE FUNCTIONs (for future integrations)
-    //@input: Image, Blob, ArrayBuffer, url  it's an image feeded programmatically
-    async function openInput(input, name){
-      if(!input) return
+    //@data: Image, Blob, ArrayBuffer, url  it's an image feeded programmatically
+    async function openInput(data, name){
+      if(!data) return
       try {
           let arrayBuffer, blob, img, info={name}
-          if(typeof input === 'string' && input.startsWith('http')) {
-            const resp = await fetch(input)
+          if(typeof data === 'string' && data.startsWith('http')) {
+            const resp = await fetch(data)
+            if(resp.status!==200) return console.error(await resp.json())
             arrayBuffer = await resp.arrayBuffer()
           }
-          else if(input instanceof Image) {
-            const resp = await fetch(input.src)
+          else if(data instanceof Image) {
+            const resp = await fetch(data.src)
+            if(resp.error) return console.error(resp.error)
             arrayBuffer = await resp.arrayBuffer()
-            img=input
+            img=data
           }
-          else if(input instanceof ArrayBuffer) {
-            arrayBuffer = input
+          else if(data instanceof ArrayBuffer) {
+            arrayBuffer = data
           }
-          else if(input instanceof Blob) {
-            blob=input
-            arrayBuffer = await input.arrayBuffer()
+          else if(data instanceof Blob) {
+            blob=data
+            arrayBuffer = await data.arrayBuffer()
           }
-          else return console.error('Unknown input type')
+          else return console.error('Unknown data type')
           info.size=arrayBuffer.byteLength
 
           if(!blob) blob = new Blob( [ arrayBuffer ] )
@@ -123,16 +130,19 @@ export function Editor(input=null,sample=true){
           }
           onImageLoaded(arrayBuffer, info, img)
       }
-      catch(e){console.error(e)}
+      catch(e){
+        console.error(e)
+        await alert(`<div style="margin:10px;text-wrap: auto;">${e}</div>`)
+        history.back()
+      }
     }
-    if(store('editor')) input=store('editor')
-    if(input) openInput(input.url,input.name)
+    if(input?.data) openInput(input.data,input.name)
   /////////////////
 
   ///// SETUP
 
     async function onImageLoaded(arrayBuffer, filedata, img){
-        if($file.value) resetAll()
+        if($file._value) resetAll()
         try{
           _exif=await miniExif(arrayBuffer)
         }
@@ -175,8 +185,8 @@ export function Editor(input=null,sample=true){
           if(zp) zp() //clean previous events
           zp = zoom_pan(zoomable,pannable)
 
-          centerCanvas()
           updateGL()          
+          centerCanvas()
         }
         catch(e){console.error(e)}
       }
@@ -410,12 +420,12 @@ export function Editor(input=null,sample=true){
 
 
   return html`
+  <div class="minieditor">
     <div class="app" >
 
-      <div class="btn_theme">${()=>ThemeToggle('dark',true)}</div>
 
       /******** LOADING PAGE ********/
-      ${()=>!$file.value && html`
+      ${()=>(!$file.value && !input.data) && html`
         <div class="main" style="justify-content: center;">
             <img src="${logo}" width=130 alt="logo"/>
             <h1> ${store('appname')} </h1>
@@ -427,15 +437,18 @@ export function Editor(input=null,sample=true){
         </div>
       `}
 
-
-      /******** EDITOR PAGE ********/
-      ${()=>$file.value && html`
-        <div class="btn_fullscreen">${()=>FullScreen(null)}</div>
+      /******** IMGEDITOR PAGE ********/
+      ${()=>$file.value &&  html`
 
         ${!input ? html`
           <div class="header">
             <div class="banner">
               <img src="${logo}" width=30 alt="logo"/> ${store('appname')}
+            </div>
+            <div></div>
+            <div style="display:flex;">
+              <div class="btn_fullscreen">${()=>FullScreen(null)}</div>
+              <div class="btn_theme">${()=>ThemeToggle('dark',true)}</div>
             </div>
           </div>
         ` : `<div class="header" style="backdrop-filter: unset;"></div>`}
@@ -466,13 +479,13 @@ export function Editor(input=null,sample=true){
 
                 <div class="menubuttons">
                   <div style="display: flex;align-items: center;justify-content: center;">
-                    ${!input && html`
+                    ${!input?.data && html`
                       ${clickdropFile('open','image/*',(file)=>readImage(file, onImageLoaded),'width:105px;height:30px;')}
                     `}
-                    ${!!input && html`
+                    ${!!input?.data && html`
                       <button style="width:105px;height:30px;" @click="${()=>input.cb()}">cancel</button>
                     `}
-                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl,input?.cb||null)}}">download</button>
+                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl,input?.cb||null)}}">${input?.data?'save':'download'}</button>
                   </div>
 
                   <div style="display: flex;align-items: center;justify-content: center;">
@@ -522,6 +535,7 @@ export function Editor(input=null,sample=true){
       </div>
 
     </div>
+  </div>
   `
 }
 

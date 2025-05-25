@@ -10,7 +10,7 @@ export default function GPSMap(coord){
       //console.log('MAP',coord)
       map = new maplibregl.Map({
         container: 'map',
-        style: 'https://tiles.stadiamaps.com/styles/alidade_smooth.json', //https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', // stylesheet location
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', //', // stylesheet location
         center: coord, // starting position [lng, lat]
         zoom: 9 // starting zoom
       });

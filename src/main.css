@@ -160,7 +160,10 @@ footer {
   color-scheme: light;
 }
 
-
+.alert-message{
+  color: light-dark(rgba(0, 0, 0, 0.87),rgba(255, 255, 255, 0.87));
+  background-color: light-dark(#e0e0e0,#191919);    
+}
 
 
 .hydra {

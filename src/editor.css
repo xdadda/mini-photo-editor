@@ -1,5 +1,13 @@
+.minieditor .banner {
+    margin: 5px;
+    display: flex;
+    align-items: center;
+    width: 180px;
+    justify-content: space-between;
+}
 
-.container {
+
+.minieditor .container {
   flex:1;
   height:100%;
   width:100%;
@@ -8,53 +16,59 @@
   display:flex;
   flex-direction: row;
   font-size:15px;
+
+  .editor {
+    flex: 1;
+    margin: 5px;
+    border-radius: 15px;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+
+    #zoomable{
+        width: 100%;
+        height: 99%; /*100% created some artifacts on Safari?!?*/
+        overflow: hidden;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    #pannable{
+        max-width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+    #canvas {
+        cursor: move;
+      }
+  }
+
+
+  .sidebar {
+    width:360px;
+    display: flex;
+    flex-direction: column;
+    margin: 15px;
+    overflow-y: auto;
+    position: relative;
+
+    .menusections {
+      margin-top: 25px;
+    }
+  } 
+
 }
 
-.editor {
-  flex: 1;
-  margin: 5px;
-  border-radius: 15px;
-  overflow: hidden;
 
-  display: flex;
-  flex-direction: column;
-}
-    .editor #zoomable{
-      width: 100%;
-      height: 99%; /*100% created some artifacts on Safari?!?*/
-      overflow: hidden;
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .editor #pannable{
-      max-width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
 
-    .editor #canvas {
-      cursor: move;
-    }
 
-.sidebar {
-  width:360px;
-  display: flex;
-  flex-direction: column;
-  margin: 15px;
-  overflow-y: auto;
-  position: relative;
-} 
-
-.menusections {
-  margin-top: 25px;
-}
-
-.section {
+.minieditor .section {
   background-color:light-dark(#e0e0e0,#222222);
   border-radius: 15px;
   padding: 10px;
@@ -68,78 +82,86 @@
   flex-direction: column;
   position: relative;
   cursor: pointer;
-}
-    .section:hover {
+
+    &:hover {
       background-color: light-dark( #ededed, #292929);
     }
-    .section b{
-      color:gray;
-    }
-    .section[selected] b{
-      color:darkorange;
-    }
-    .section[selected] {
-      background-color: light-dark( #d4d4d4, #292929);
-    }
-    .section[skipped] {
+    &[skipped] {
       opacity: 0.5;
     }
+    &[selected] {
+      background-color: light-dark( #d4d4d4, #292929);
+    }
+    &[selected] .section_header .section_label{
+      color:darkorange;
+    }
 
-    .section .section_header {
+    .section_header {
       display:flex;
       justify-content: space-between;
       cursor:pointer;
+
+      .section_skip {
+        width: 20px;
+        color:darkorange;
+        cursor:cell;
+
+        &:hover {
+          filter: brightness(1.2);
+        }
+      }
+
+      .section_label {
+        flex: 1;
+        text-align: left;
+        color:gray;
+      }
+
+      .reset_btn{
+        font-weight: bold;
+        &[disabled]{
+          font-weight: normal;
+        }
+      }
+
     }
+
     .section_content {
       flex:1;
-    }
-    .section_content .section_scroll {
-      height: 100%;
-    }
 
-    .section .section_skip {
-      width: 20px;
-      color:darkorange;
-      cursor:cell;
+      .section_scroll {
+        height: 100%;
+      }
+      .done_btn, .close_btn {
+        position: absolute;top: 7px;right: 25px;height: 20px;width: 100px;padding: 0;background: darkorange;
+      }
+      .close_btn {
+        width: 40px;
+        display: none;
+      }
+      &.skip {
+        opacity: 0.2;
+        pointer-events: none;
+      }
     }
-    .section .done_btn, .close_btn {
-      position: absolute;top: 7px;right: 25px;height: 20px;width: 100px;padding: 0;background: darkorange;
-    }
-    .section .close_btn {
-      width: 40px;
-      display: none;
-    }
-    .section .section_skip:hover {
-      filter: brightness(1.2);
-    }
+}
 
-    .section .section_label {
-      flex: 1;
-      text-align: left;
-    }
-    .section .skip {
-      opacity: 0.2;
-      pointer-events: none;
-    }
-    .cc_container {
+
+
+
+.minieditor .sidebar .cc_container {
       display: flex; 
       flex-direction: column;
     }
 
-    .rangelabel {
+.minieditor .sidebar .rangelabel {
       width:100px;
       text-align:left;
       color:gray;
     }
 
-    .reset_btn{
-      font-weight: bold;
-    }
-    .reset_btn[disabled]{
-      font-weight: normal;
-    }
 
-.sidebar input[type='range'] {
+.minieditor .sidebar input[type='range'] {
   appearance: none;
   cursor: pointer;
   border: 0;
@@ -192,142 +214,139 @@
   }
 
 
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: gray;
+  }
+  &::-moz-range-thumb {
+    background-color: gray;
+  }
 } 
 
-.sidebar input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background-color: gray;
-}
-.sidebar input[type=range]::-moz-range-thumb {
-  background-color: gray;
-}
-
-.sidebar input[type=number].rangenumb {
+.minieditor .sidebar input[type=number].rangenumb {
   padding:0px;
   text-align: right;
   width:50px;
   color:gray;
+
+  /* hide step buttons on Chrome/Safari*/
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+      opacity: 0;
+  }
+  &:focus::-webkit-inner-spin-button,
+  &:focus::-webkit-outer-spin-button,
+  &:hover::-webkit-inner-spin-button,
+  &:hover::-webkit-outer-spin-button {
+      opacity: 1;
+  }
+
 }
 
-/* hide step buttons on Chrome/Safari*/
-.sidebar input[type=number]::-webkit-inner-spin-button,
-.sidebar input[type=number]::-webkit-outer-spin-button {
-    opacity: 0;
-}
-.sidebar input[type=number]:focus::-webkit-inner-spin-button,
-.sidebar input[type=number]:focus::-webkit-outer-spin-button,
-.sidebar input[type=number]:hover::-webkit-inner-spin-button,
-.sidebar input[type=number]:hover::-webkit-outer-spin-button {
-    opacity: 1;
-}
-
-.banner {
-    margin: 5px;
-    display: flex;
-    align-items: center;
-    width: 180px;
-    justify-content: space-between;
-}
 
 
 @media (orientation: portrait) {
   .alert-message .msg {
     max-width: 90vw !important;
   }
-  .footer {
-    height: 1px;
-    opacity: 0;
-  }
-  .container {
+  .minieditor .container {
     flex-direction: column;
-  }
-  .sidebar {
-    width:95%;
-    height: 210px;
-    margin: 5px auto 5px auto;
-    justify-content: end;
-  }
-  .menusections{
-    display: flex;
-    flex-direction: row;
-    overflow: auto hidden;
-    -ms-overflow-style: none; /* for Internet Explorer, Edge */
-    scrollbar-width: none; /* for Firefox */
-    align-items: flex-end;
-    height: 90px !important;
+
+    .sidebar {
+      width:95%;
+      height: 210px;
+      margin: 5px auto 5px auto;
+      justify-content: end;
+
+      .menusections{
+        display: flex;
+        flex-direction: row;
+        overflow: auto hidden;
+        -ms-overflow-style: none; /* for Internet Explorer, Edge */
+        scrollbar-width: none; /* for Firefox */
+        align-items: flex-end;
+        height: 90px !important;
+
+      }
+    }
 
   }
-  .section {
+
+  .minieditor .section {
     overflow: hidden;
     transition: unset;
     flex-direction: column-reverse;
     margin: 0 2px;
     position: unset;
-  }
-  .section_skip {
-    display: none;
-  }
-  .done_btn {
-    top: 0px !important;
-    right: 5px !important;
-    margin: 0px;
-  }
-  .close_btn {
-    top: 0px !important;
-    right: 5px !important;
-    margin: 0px;
-    display: unset !important;
-  }
-  .reset_btn{
-    margin-left:5px;
-  }
-  .section_content{
-        position: absolute;
-        left: 0;
-        bottom: 48px;
-        right: 0;
-        height: 120px;
-        background-color: inherit;
-        overflow: auto;
-        padding: 30px 10px 10px 10px;
-        border-radius: 15px;
-  }
-    #curve_content{
-      padding:10px;
-      height: 140px;
+
+    .section_skip {
+      display: none;
     }
-  
-  .section_content::before{
-    content: ' .';
+    .reset_btn{
+      margin-left:5px !important;
+    }
+  }
+
+  .minieditor .section_content{
     position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    color: transparent;
-    background-color: light-dark(#c2c2c2, #242424);;
+    left: 0;
+    bottom: 48px;
+    right: 0;
+    height: 120px;
+    background-color: inherit;
+    overflow: auto;
+    padding: 30px 10px 10px 10px;
+    border-radius: 15px;
+
+    .section_scroll{
+      height:100%;
+      overflow: hidden auto;
+      -ms-overflow-style: none; /* for Internet Explorer, Edge */
+      scrollbar-width: none; /* for Firefox */
+    }
+    .done_btn {
+      top: 0px !important;
+      right: 5px !important;
+      margin: 0px;
+    }
+    .close_btn {
+      top: 0px !important;
+      right: 5px !important;
+      margin: 0px;
+      display: unset !important;
+    }
+    &::before{
+      content: ' .';
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      color: transparent;
+      background-color: light-dark(#c2c2c2, #242424);;
+    }
+    hr:first-child{
+      display: none;
+    }
+  }
+
+  #curve_content{
+    padding:10px;
+    height: 140px;
+    .section_scroll {
+        overflow: hidden;
+      }
   }
   
-  .section_content hr:first-child{
-    display: none;
-  }
-  .section_scroll{
-    height:100%;
-    overflow: hidden auto;
-    -ms-overflow-style: none; /* for Internet Explorer, Edge */
-    scrollbar-width: none; /* for Firefox */
-  }
-  #curve_content .section_scroll {
-    overflow: hidden;
-  }
-  .sidebar input[type=number].rangenumb {
+
+  .minieditor .sidebar input[type=number].rangenumb {
     pointer-events:none;
   }
-    .cc_container {
-      margin-top: 4px;
-    }
+  .minieditor .sidebar .cc_container {
+    margin-top: 4px;
+  }
 
 }
 

@@ -79,7 +79,7 @@ import { alert } from '@xdadda/mini/components'
 
   //NOTE: it will not work in IOS Safari if not behind https!! so no localhost but don't worry
   export const shareBlob = async (filename, blob) => {
-    console.log(filename)
+    //console.log(filename)
     const data = {
       files: [
         new File([blob], filename, {

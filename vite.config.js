@@ -21,7 +21,7 @@ return {
       
       rollupOptions: {
         output: {
-          manualChunks: { mini: ['@xdadda/mini'] } 
+          manualChunks: { mini: ['@xdadda/mini','@xdadda/mini/store'] } 
         }
       }
       
