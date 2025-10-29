@@ -8,7 +8,7 @@ export default function Perspective(canvas, params, onUpdate){
     let status = 0 //0 =drawing before, 1= drawing after
     if(params?.before) status=1 
 
-    console.log('perspective',status,initpoints)
+    //console.log('perspective',status,initpoints)
     let firstdraw=true
     function drawQuad(points, ctx){
       ctx.clearRect(0, 0, mousecanvas.width, mousecanvas.height);
@@ -40,7 +40,7 @@ export default function Perspective(canvas, params, onUpdate){
 
   return html`
       <style>
-        #mousecanvas{background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);background-size: 9.99% 9.99%;}
+        #mousecanvas{border: 1px solid white;background-image: repeating-linear-gradient(#ccc 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 100%);background-size: 9.99% 9.99%;}
       </style>
       ${canvasMouse(canvas, initpoints, drawQuad, resetQuad)}
   `

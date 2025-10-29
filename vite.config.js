@@ -24,7 +24,6 @@ return {
           manualChunks: { mini: ['@xdadda/mini','@xdadda/mini/store'] } 
         }
       }
-      
     },
   }
 })

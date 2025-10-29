@@ -44,7 +44,7 @@ export default function canvasMouse(el, initpoints, onUpdate, onReset){
       pointselected=undefined
       mousecontainer.releasePointerCapture(e.pointerId)
       mousecontainer.removeEventListener("pointermove", dragmove);
-      mousecontainer.removeEventListener("pointerup", dragstop);    
+      mousecontainer.removeEventListener("pointerup", dragstop);
 
     }
 

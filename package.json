@@ -12,9 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@xdadda/mini": "^0.2.13",
+    "@xdadda/mini": "file:../minijs",
     "@xdadda/mini-exif": "^0.2.2",
-    "@xdadda/mini-gl": "^0.1.14",
+    "@xdadda/mini-gl": "file:../mini_gl",
     "ismobilejs": "^1.1.1"
   },
   "devDependencies": {

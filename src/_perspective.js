@@ -90,7 +90,9 @@ export default function _perspective($selection, params, onUpdate){
 
             <hr>
               /* PERSPECTIVE V2 */
-              Perspective <button @click="${togglePerspective2}">toggle</button> <button @click="${unlockPerspective2}">unlock ctrl</button> <button @click="${lockPerspective2}">lock ctrl</button>
+              Perspective <button @click="${togglePerspective2}">toggle</button> 
+              <button @click="${unlockPerspective2}">unlock ctrl</button> 
+              <button @click="${lockPerspective2}">lock ctrl</button>
 
             ${()=>persp2.value && html`${Perspective(canvas,persp2.value,()=>{updateResetBtn();onUpdate()})}`}
 

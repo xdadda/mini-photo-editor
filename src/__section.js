@@ -1,4 +1,4 @@
-import { html, reactive } from '@xdadda/mini'
+import { html, reactive, onMount, onUnmount } from '@xdadda/mini'
 
 
 //Note: if onEnable notdefined/null the enable/disable button will not be visible
@@ -36,6 +36,7 @@ export default function section(sectionname, height, $selection, params, onEnabl
       }
     }
 
+
   return html`
     <div class="section" id="${sectionname}" :style="${()=>$selection.value===sectionname&&`height:${height}px;`}" :selected="${()=>$selection.value===sectionname}" @click="${(e)=>{e.stopPropagation();$selection.value=sectionname}}">
         <div class="section_header" >
@@ -55,3 +56,4 @@ export default function section(sectionname, height, $selection, params, onEnabl
         `}
     </div>`
 }
+

@@ -20,6 +20,7 @@ Current features:
 * Insta-like filters
 * Image blender
 * Bokeh/lens and gaussian blur
+* Heal brush (telea inpaint algorithm)
 * Split view before-after
 * Color histogram
 * Exif/Tiff/GPS info

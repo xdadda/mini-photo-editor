@@ -26,10 +26,34 @@
     display: flex;
     flex-direction: column;
 
+
+    #canvas {
+        cursor: move;
+      }
+  }
+
+
+  .sidebar {
+    width:360px;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    overflow-y: auto;
+    position: relative;
+      background-color: light-dark(#ffffff,#191919);
+
+    .menusections {
+      margin-top: 25px;
+    }
+  } 
+
+}
+
+
     #zoomable{
         width: 100%;
         height: 99%; /*100% created some artifacts on Safari?!?*/
-        overflow: hidden;
+        /*overflow: hidden;*/
 
         display: flex;
         align-items: center;
@@ -43,29 +67,6 @@
         justify-content: center;
         position: relative;
       }
-    #canvas {
-        cursor: move;
-      }
-  }
-
-
-  .sidebar {
-    width:360px;
-    display: flex;
-    flex-direction: column;
-    margin: 15px;
-    overflow-y: auto;
-    position: relative;
-
-    .menusections {
-      margin-top: 25px;
-    }
-  } 
-
-}
-
-
-
 
 
 .minieditor .section {

@@ -3,8 +3,7 @@ import icon_rotate from './assets/icon_rotate.svg?raw'
 import icon_flip from './assets/icon_flip.svg?raw'
 import icon_skew from './assets/icon_skew.svg?raw'
 
-//import Quad from './components/perspective.js'
-import Perspective from './components/perspective2.js'
+import Quad from './components/perspective.js'
 import section from './__section.js'
 
 
@@ -66,8 +65,8 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
           setTRSCtrl('trs_'+e)
         })
         
-        Object.keys(adj['perspective2']).forEach(e=>{
-          adj['perspective2'][e]=0
+        Object.keys(adj['perspective']).forEach(e=>{
+          adj['perspective'][e]=0
         })
 
         const fliph=document.getElementById('fliph')
@@ -116,7 +115,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
 
 
     function updateResetBtn(){
-      const flag = Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 && adj.perspective2.modified==0 && adj.resizer.width===0
+      const flag = Object.values(adj.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(adj.crop).reduce((p,v)=>p+=v,0)===0 && adj.perspective.modified==0 && adj.resizer.width===0
       if(flag) btn_reset_composition.setAttribute('disabled',true)
       else btn_reset_composition.removeAttribute('disabled')
     }
@@ -218,7 +217,8 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
     let persp=reactive(false)
     //let perspel
     async function showPerspective(){
-      persp.value=adj.perspective2
+      persp.value=adj.perspective
+      //perspel = await render(plcquad,()=>Quad(canvas,adj.perspective,()=>{updateResetBtn();onUpdate()}))
       crop.style.display='none'
     }
     function hidePerspective(){
@@ -233,19 +233,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
       if(persp.value) hidePerspective()
       else showPerspective()
     }
-    function lockPerspective(){
-      if(!adj.perspective2.before) return
-      adj.perspective2.after=0
-      persp.value=false
-      persp.value=adj.perspective2
-    }
-    function unlockPerspective(){
-      adj.perspective2.before=0
-      adj.perspective2.after=0
-      persp.value=false
-      persp.value=adj.perspective2
-    }
-
   /////////////////
 
   ///// RESIZER
@@ -323,15 +310,6 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
                 <button class="crop_btn" title="rotate left" @click="${()=>rotateCanvas(-90)}">${icon_rotate}</button>
                 <button class="crop_btn" title="perspective" :selected="${()=>!!persp.value}" @click="${togglePerspective}">${icon_skew}</button>
               </div>
-
-            ${()=>persp.value && html`
-              <hr>
-              ${()=>!persp.value.before && html`<div style="text-align:center;color:darksalmon;">position corners AND <button @click="${lockPerspective}">lock rect</button></div>`}
-              ${()=>!!persp.value.before && html`<div style="text-align:center;color:darksalmon;">drag corners</div>`}
-              ${Perspective(canvas,persp.value,()=>{updateResetBtn();onUpdate()})}
-            `}
-
-
             <hr>
               <div style="text-align:left;color:gray;">crop ratio</div>
               <div style="text-align:left;" id="aspects">
@@ -348,6 +326,7 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
                 <input id="resize_height" type="number" value="${canvas.height}" style="text-align:center;width:90px;" @change="${setHeight}">
               </div>
 
+            ${()=>persp.value && html`${Quad(canvas,persp.value,()=>{updateResetBtn();onUpdate()})}`}
 
       `)}
 
@@ -355,4 +334,3 @@ export default function composition($selection, adj, onUpdate, get_minigl, cente
 
   `
 }
-//              ${Quad(canvas,persp.value,()=>{updateResetBtn();onUpdate()})}

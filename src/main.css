@@ -6,10 +6,11 @@ html {
 body {
   margin: 0;
   user-select: none;
-  -webkit-user-select: none;
+  -webkit-user-select: none; 
+}
+#root {
   height: 100vh;
 }
-
 a {
   text-decoration: none;
   padding: 1px;
@@ -95,6 +96,7 @@ input, select{
 }
 
 
+
 :root {
   font-family: -apple-system, system-ui;
   font-size: 1.2em;
@@ -119,7 +121,7 @@ input, select{
 /****************** COLOR SCHEME ******************/
 /**************************************************/
 
-#root,body {
+#root {
   color: light-dark(#213547,rgba(255, 255, 255, 0.87));
   background-color: light-dark(#ffffff,#191919);
 }

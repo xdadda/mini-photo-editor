@@ -225,13 +225,12 @@ export function Editor(input=false){
         params.heal.healit=0
       }
 
-      /*
+
       if(params.perspective2.after) {
           let before = params.perspective2.before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
           let after = params.perspective2.after.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
           _minigl.filterPerspective(before,after, false, false)
       }
-      */
 
 
       // TRANSLATE/ROTATE/SCALE filter
@@ -243,18 +242,11 @@ export function Editor(input=false){
         params.trs.angle-=params.crop.canvas_angle
 
         // PERSPECTIVE correction
-        /*
         if(params.perspective.quad) {
           let before=[[0.25,0.25], [0.75,0.25], [0.75,0.75],[0.25,0.75]]
           before = before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
           let after = (params.perspective.quad).map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
           _minigl.filterPerspective(before,after, false, false)
-        }
-        */
-        if(params.perspective2.after) {
-            let before = params.perspective2.before.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
-            let after = params.perspective2.after.map(e=>[(e[0]*canvas.width),(e[1]*canvas.height)])
-            _minigl.filterPerspective(before,after, false, false)
         }
 
 
@@ -393,7 +385,7 @@ export function Editor(input=false){
     function onCropUpdate(){
       ////this is a UI hack, need to change a button inside Composition component ... sorry
       //toggle btn_reset_comp
-      if(Object.values(params.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params.crop).reduce((p,v)=>p+=v,0)===0 && params.perspective2.modified==0 && params.resizer.width===0) btn_reset_composition.setAttribute('disabled',true)
+      if(Object.values(params.trs).reduce((p,v)=>p+=v,0)===0 && Object.values(params.crop).reduce((p,v)=>p+=v,0)===0 && params.perspective.modified==0 && params.resizer.width===0) btn_reset_composition.setAttribute('disabled',true)
       else btn_reset_composition.removeAttribute('disabled')
     }
   /////////////////
@@ -556,6 +548,7 @@ export function Editor(input=false){
 
                   /******** HEAL BRUSH *******/
                   ${heal($selection, params, updateGL)}
+
 
                 </div>
 
