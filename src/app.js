@@ -78,6 +78,9 @@ export function Editor(input=false){
   let sample=true
   if(input?.sample===false) sample=false
 
+  // Detect if running in Tauri
+  const isTauri = typeof window !== 'undefined' && window.__TAURI_INTERNALS__ !== undefined
+
   let _exif, _minigl, zp
   const $file = reactive(false)
   const $canvas = reactive()
@@ -100,10 +103,11 @@ export function Editor(input=false){
 
   ///// INPUT/SAVE FUNCTIONs (for future integrations)
     //@data: Image, Blob, ArrayBuffer, url  it's an image feeded programmatically
-    async function openInput(data, name){
+    async function openInput(data, name, path){
       if(!data) return
       try {
           let arrayBuffer, blob, img, info={name}
+          if(path) info.path = path
           if(typeof data === 'string' && data.startsWith('http')) {
             const resp = await fetch(data)
             if(resp.status!==200) return console.error(await resp.json())
@@ -139,7 +143,7 @@ export function Editor(input=false){
         history.back()
       }
     }
-    if(input?.data) openInput(input.data,input.name)
+    if(input?.data) openInput(input.data,input.name,input.path)
   /////////////////
 
   ///// SETUP
@@ -520,7 +524,7 @@ export function Editor(input=false){
                     ${!!input?.data && html`
                       <button style="width:105px;height:30px;" @click="${()=>input.cb()}">cancel</button>
                     `}
-                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl,input?.cb||null)}}">${input?.data?'save':'download'}</button>
+                    <button style="width:105px;height:30px;" id="btn_download" @click="${()=>{$selection.value='';downloadImage($file,_exif,_minigl,input?.cb||null)}}">${(input?.data || isTauri)?'save':'download'}</button>
                   </div>
 
                   <div style="display: flex;align-items: center;justify-content: center;">

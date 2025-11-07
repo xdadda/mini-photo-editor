@@ -5,19 +5,30 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5174 --host 0.0.0.0",
+    "dev:vite": "vite --port 5174",
+    "download-rexxjs": "mkdir -p public && curl -L -o public/rexxjs.bundle.js https://repl.rexxjs.org/repl/dist/rexxjs.bundle.js && echo '✓ RexxJS bundle downloaded'",
+    "prebuild": "npm run download-rexxjs",
     "build": "vite build",
     "buildlib": "vite build --config libvite.config.js",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "tauri:dev": "npx tauri dev",
+    "pretauri:build": "npm run download-rexxjs",
+    "tauri:build": "npx tauri build"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@xdadda/mini": "file:../minijs",
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-dialog": "^2.0.1",
+    "@tauri-apps/plugin-fs": "^2.0.1",
+    "@xdadda/mini": "^0.2.16",
     "@xdadda/mini-exif": "^0.2.2",
-    "@xdadda/mini-gl": "file:../mini_gl",
+    "@xdadda/mini-gl": "^0.1.14",
     "ismobilejs": "^1.1.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "patch-package": "^8.0.1",
     "rollup-plugin-minify-template-literals": "^1.1.7",
     "vite": "^6.2.2"
   },

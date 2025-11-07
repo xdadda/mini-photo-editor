@@ -1,0 +1,78 @@
+{
+  "params": {
+    "trs": {
+      "translateX": 0,
+      "translateY": 0,
+      "angle": 0,
+      "scale": 0,
+      "flipv": 0,
+      "fliph": 0
+    },
+    "crop": {
+      "currentcrop": 0,
+      "glcrop": 0,
+      "canvas_angle": 0,
+      "ar": 0,
+      "arindex": 0
+    },
+    "lights": {
+      "brightness": 0.2,
+      "exposure": 0.1,
+      "gamma": 0,
+      "contrast": 0.15,
+      "shadows": 0,
+      "highlights": 0,
+      "bloom": 0
+    },
+    "colors": {
+      "temperature": 0.1,
+      "tint": 0,
+      "vibrance": 0.1,
+      "saturation": 0.05,
+      "sepia": 0
+    },
+    "effects": {
+      "clarity": 0.25,
+      "noise": 0,
+      "vignette": 0.2
+    },
+    "curve": {
+      "curvepoints": 0
+    },
+    "filters": {
+      "opt": 20,
+      "mix": 0.7
+    },
+    "perspective": {
+      "quad": 0,
+      "modified": 0
+    },
+    "perspective2": {
+      "before": 0,
+      "after": 0,
+      "modified": 0
+    },
+    "blender": {
+      "blendmap": 0,
+      "blendmix": 0.5
+    },
+    "resizer": {
+      "width": 0,
+      "height": 0
+    },
+    "blur": {
+      "bokehstrength": 0,
+      "bokehlensout": 0.5,
+      "gaussianstrength": 0,
+      "gaussianlensout": 0.5,
+      "centerX": 0.5,
+      "centerY": 0.5
+    },
+    "heal": {
+      "healmask": 0
+    }
+  },
+  "metadata": null,
+  "description": "Sample state with moon filter and enhancements",
+  "notes": "This state applies the moon filter with 0.7 intensity, plus basic enhancements: brightness, contrast, clarity, and vignette"
+}

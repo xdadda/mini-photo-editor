@@ -8,3 +8,10 @@ dist-ssr
 .env*
 package-lock.json
 TODO.txt
+
+# Tauri
+src-tauri/gen/
+src-tauri/target/
+
+# Downloaded at build time
+public/rexxjs.bundle.js
