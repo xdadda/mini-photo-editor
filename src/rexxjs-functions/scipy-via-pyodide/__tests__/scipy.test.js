@@ -43,7 +43,12 @@ describe('SciPy via PyOdide', () => {
     expect(typeof scipy.medianFilter).toBe('function');
     expect(typeof scipy.laplaceFilter).toBe('function');
     expect(typeof scipy.uniformFilter).toBe('function');
+    expect(typeof scipy.morphErosion).toBe('function');
+    expect(typeof scipy.morphDilation).toBe('function');
+    expect(typeof scipy.unsharpMask).toBe('function');
   });
+
+  // Test all 8 SciPy filters individually
 
   test('gaussianFilter should process image data', async () => {
     if (skipIfNoPyodide()) return;
@@ -145,6 +150,11 @@ describe('SciPy Optimized for REXX', () => {
     expect(typeof scipyRexx.GAUSSIAN_FILTER).toBe('function');
     expect(typeof scipyRexx.SOBEL_FILTER).toBe('function');
     expect(typeof scipyRexx.MEDIAN_FILTER).toBe('function');
+    expect(typeof scipyRexx.LAPLACE_FILTER).toBe('function');
+    expect(typeof scipyRexx.UNIFORM_FILTER).toBe('function');
+    expect(typeof scipyRexx.MORPH_EROSION).toBe('function');
+    expect(typeof scipyRexx.MORPH_DILATION).toBe('function');
+    expect(typeof scipyRexx.UNSHARP_MASK).toBe('function');
     expect(typeof scipyRexx.SCIPY_META).toBe('function');
   });
 
@@ -155,5 +165,8 @@ describe('SciPy Optimized for REXX', () => {
     expect(meta.name).toBe('SciPy Image Processing');
     expect(Array.isArray(meta.provides.functions)).toBe(true);
     expect(meta.provides.functions).toContain('GAUSSIAN_FILTER');
+    expect(meta.provides.functions).toContain('SOBEL_FILTER');
+    expect(meta.provides.functions).toContain('MORPH_EROSION');
+    expect(meta.provides.functions.length).toBe(8);
   });
 });
