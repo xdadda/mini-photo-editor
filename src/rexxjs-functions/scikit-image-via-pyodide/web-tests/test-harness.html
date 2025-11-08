@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scikit-Image PyOdide Test Harness</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 { color: #4ec9b0; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover { background: #1177bb; }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #252526;
+            border: 1px solid #3c3c3c;
+            padding: 15px;
+            margin-top: 20px;
+            min-height: 400px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .loading { background: #f39c12; color: #000; }
+        .success { background: #27ae60; color: #fff; }
+        .error { background: #e74c3c; color: #fff; }
+        .pass { color: #4ec9b0; }
+        .fail { color: #f48771; }
+    </style>
+</head>
+<body>
+    <h1>🔬 Scikit-Image via PyOdide - Browser Test Harness</h1>
+    <p>This test runs all 8 Scikit-Image filters in a real browser with PyOdide.</p>
+    <p><strong>Note:</strong> First load takes longer as scikit-image is a large package.</p>
+
+    <button onclick="runTests()" id="runBtn">Run All Scikit-Image Tests</button>
+
+    <div id="status"></div>
+    <div id="log"></div>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
+
+    <script type="module">
+        import skimage from '../scikit-image.js';
+
+        window.skimage = skimage;
+
+        let testResults = [];
+
+        function log(message, className = '') {
+            const logDiv = document.getElementById('log');
+            const span = document.createElement('span');
+            span.textContent = message + '\n';
+            if (className) span.className = className;
+            logDiv.appendChild(span);
+            console.log(message);
+        }
+
+        function setStatus(message, className = '') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = className;
+        }
+
+        async function createTestImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 20;
+            canvas.height = 20;
+            const ctx = canvas.getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 20, 20);
+            gradient.addColorStop(0, 'red');
+            gradient.addColorStop(0.5, 'green');
+            gradient.addColorStop(1, 'blue');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 20, 20);
+
+            return ctx.getImageData(0, 0, 20, 20);
+        }
+
+        function validateImageData(imageData, testName) {
+            if (!(imageData instanceof ImageData)) {
+                throw new Error(`${testName}: Result is not ImageData`);
+            }
+            if (imageData.width !== 20 || imageData.height !== 20) {
+                throw new Error(`${testName}: Incorrect dimensions`);
+            }
+        }
+
+        window.runTests = async function() {
+            const runBtn = document.getElementById('runBtn');
+            runBtn.disabled = true;
+            document.getElementById('log').textContent = '';
+            testResults = [];
+
+            try {
+                setStatus('Initializing PyOdide and Scikit-Image...', 'loading');
+                log('🚀 Starting Scikit-Image test suite...');
+                log('📦 Loading PyOdide and Scikit-Image packages...');
+                log('⏳ This may take 30-60 seconds on first load...');
+
+                await window.skimage.initializePyodide();
+
+                log('✅ PyOdide and Scikit-Image loaded successfully!\n');
+
+                const testImage = await createTestImage();
+                log(`📸 Created test image: ${testImage.width}x${testImage.height}\n`);
+
+                // Test all 8 main filters
+                const tests = [
+                    { name: 'TV Denoise', fn: () => window.skimage.denoiseTV(testImage, 0.1) },
+                    { name: 'Bilateral Denoise', fn: () => window.skimage.denoiseBilateral(testImage, 0.05, 15) },
+                    { name: 'Canny Edge Detection', fn: () => window.skimage.cannyEdges(testImage, 1.0) },
+                    { name: 'Morphological Opening', fn: () => window.skimage.morphOpening(testImage, 3) },
+                    { name: 'Morphological Closing', fn: () => window.skimage.morphClosing(testImage, 3) },
+                    { name: 'Gamma Adjustment', fn: () => window.skimage.adjustGamma(testImage, 1.5) },
+                    { name: 'Adaptive Equalization', fn: () => window.skimage.equalizeAdaptive(testImage, 0.03) },
+                    { name: 'Unsharp Mask', fn: () => window.skimage.unsharpMaskFilter(testImage, 1.0, 1.0) }
+                ];
+
+                for (const test of tests) {
+                    log(`Testing ${test.name}...`);
+                    const result = await test.fn();
+                    validateImageData(result, test.name);
+                    log(`✓ ${test.name}: PASSED`, 'pass');
+                    testResults.push({ name: test.name, passed: true });
+                    log('');
+                }
+
+                const passedCount = testResults.filter(t => t.passed).length;
+                log(`═══════════════════════════════════════`);
+                log(`✅ All ${passedCount}/8 Scikit-Image tests passed!`, 'pass');
+                log(`═══════════════════════════════════════`);
+
+                setStatus('All tests passed! ✅', 'success');
+
+            } catch (error) {
+                log(`\n❌ Test failed: ${error.message}`, 'fail');
+                setStatus(`Test failed: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                runBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

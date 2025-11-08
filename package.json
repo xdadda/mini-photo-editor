@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 5174 --host 0.0.0.0",
     "dev:vite": "vite --port 5174",
+    "dev:test-server": "vite --port 8083 --host 0.0.0.0",
     "download-rexxjs": "mkdir -p public && curl -L -o public/rexxjs.bundle.js https://repl.rexxjs.org/repl/dist/rexxjs.bundle.js && echo '✓ RexxJS bundle downloaded'",
     "prebuild": "npm run download-rexxjs",
     "build": "vite build",
@@ -13,7 +14,12 @@
     "serve": "vite preview",
     "tauri:dev": "npx tauri dev",
     "pretauri:build": "npm run download-rexxjs",
-    "tauri:build": "npx tauri build"
+    "tauri:build": "npx tauri build",
+    "test": "playwright test",
+    "test:scipy": "playwright test src/rexxjs-functions/scipy-via-pyodide/web-tests",
+    "test:pillow": "playwright test src/rexxjs-functions/pillow-via-pyodide/web-tests",
+    "test:skimage": "playwright test src/rexxjs-functions/scikit-image-via-pyodide/web-tests",
+    "test:ui": "playwright test --ui"
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +33,7 @@
     "ismobilejs": "^1.1.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
     "@tauri-apps/cli": "^2.1.0",
     "patch-package": "^8.0.1",
     "rollup-plugin-minify-template-literals": "^1.1.7",

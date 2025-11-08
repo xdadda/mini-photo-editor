@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciPy PyOdide Test Harness</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 { color: #4ec9b0; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover { background: #1177bb; }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #252526;
+            border: 1px solid #3c3c3c;
+            padding: 15px;
+            margin-top: 20px;
+            min-height: 400px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .loading { background: #f39c12; color: #000; }
+        .success { background: #27ae60; color: #fff; }
+        .error { background: #e74c3c; color: #fff; }
+        .pass { color: #4ec9b0; }
+        .fail { color: #f48771; }
+    </style>
+</head>
+<body>
+    <h1>🧮 SciPy via PyOdide - Browser Test Harness</h1>
+    <p>This test runs all 8 SciPy filters in a real browser with PyOdide.</p>
+
+    <button onclick="runTests()" id="runBtn">Run All SciPy Tests</button>
+
+    <div id="status"></div>
+    <div id="log"></div>
+
+    <!-- Load PyOdide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
+
+    <script type="module">
+        import scipy from '../scipy.js';
+
+        window.scipy = scipy;
+
+        let testResults = [];
+
+        function log(message, className = '') {
+            const logDiv = document.getElementById('log');
+            const span = document.createElement('span');
+            span.textContent = message + '\n';
+            if (className) span.className = className;
+            logDiv.appendChild(span);
+            console.log(message);
+        }
+
+        function setStatus(message, className = '') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = className;
+        }
+
+        async function createTestImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 20;
+            canvas.height = 20;
+            const ctx = canvas.getContext('2d');
+
+            // Create a simple gradient
+            const gradient = ctx.createLinearGradient(0, 0, 20, 20);
+            gradient.addColorStop(0, 'red');
+            gradient.addColorStop(0.5, 'green');
+            gradient.addColorStop(1, 'blue');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 20, 20);
+
+            return ctx.getImageData(0, 0, 20, 20);
+        }
+
+        function validateImageData(imageData, testName) {
+            if (!(imageData instanceof ImageData)) {
+                throw new Error(`${testName}: Result is not ImageData`);
+            }
+            if (imageData.width !== 20 || imageData.height !== 20) {
+                throw new Error(`${testName}: Incorrect dimensions`);
+            }
+            if (imageData.data.length !== 1600) {
+                throw new Error(`${testName}: Incorrect data length`);
+            }
+        }
+
+        window.runTests = async function() {
+            const runBtn = document.getElementById('runBtn');
+            runBtn.disabled = true;
+            document.getElementById('log').textContent = '';
+            testResults = [];
+
+            try {
+                setStatus('Initializing PyOdide and SciPy...', 'loading');
+                log('🚀 Starting SciPy test suite...');
+                log('📦 Loading PyOdide and SciPy packages...');
+
+                await window.scipy.initializePyodide();
+
+                log('✅ PyOdide and SciPy loaded successfully!\n');
+
+                const testImage = await createTestImage();
+                log(`📸 Created test image: ${testImage.width}x${testImage.height}\n`);
+
+                // Test 1: Gaussian Filter
+                log('Testing Gaussian Filter...');
+                const gaussianResult = await window.scipy.gaussianFilter(testImage, 2.0);
+                validateImageData(gaussianResult, 'Gaussian Filter');
+                log('✓ Gaussian Filter: PASSED', 'pass');
+                testResults.push({ name: 'Gaussian', passed: true });
+
+                // Test 2: Sobel Filter
+                log('\nTesting Sobel Filter...');
+                const sobelResult = await window.scipy.sobelFilter(testImage, 1.0);
+                validateImageData(sobelResult, 'Sobel Filter');
+                log('✓ Sobel Filter: PASSED', 'pass');
+                testResults.push({ name: 'Sobel', passed: true });
+
+                // Test 3: Median Filter
+                log('\nTesting Median Filter...');
+                const medianResult = await window.scipy.medianFilter(testImage, 3);
+                validateImageData(medianResult, 'Median Filter');
+                log('✓ Median Filter: PASSED', 'pass');
+                testResults.push({ name: 'Median', passed: true });
+
+                // Test 4: Laplace Filter
+                log('\nTesting Laplace Filter...');
+                const laplaceResult = await window.scipy.laplaceFilter(testImage, 0.5);
+                validateImageData(laplaceResult, 'Laplace Filter');
+                log('✓ Laplace Filter: PASSED', 'pass');
+                testResults.push({ name: 'Laplace', passed: true });
+
+                // Test 5: Uniform Filter
+                log('\nTesting Uniform Filter...');
+                const uniformResult = await window.scipy.uniformFilter(testImage, 5);
+                validateImageData(uniformResult, 'Uniform Filter');
+                log('✓ Uniform Filter: PASSED', 'pass');
+                testResults.push({ name: 'Uniform', passed: true });
+
+                // Test 6: Morphological Erosion
+                log('\nTesting Morphological Erosion...');
+                const erosionResult = await window.scipy.morphErosion(testImage, 1);
+                validateImageData(erosionResult, 'Morphological Erosion');
+                log('✓ Morphological Erosion: PASSED', 'pass');
+                testResults.push({ name: 'Erosion', passed: true });
+
+                // Test 7: Morphological Dilation
+                log('\nTesting Morphological Dilation...');
+                const dilationResult = await window.scipy.morphDilation(testImage, 1);
+                validateImageData(dilationResult, 'Morphological Dilation');
+                log('✓ Morphological Dilation: PASSED', 'pass');
+                testResults.push({ name: 'Dilation', passed: true });
+
+                // Test 8: Unsharp Mask
+                log('\nTesting Unsharp Mask...');
+                const unsharpResult = await window.scipy.unsharpMask(testImage, 1.0, 1.0);
+                validateImageData(unsharpResult, 'Unsharp Mask');
+                log('✓ Unsharp Mask: PASSED', 'pass');
+                testResults.push({ name: 'Unsharp', passed: true });
+
+                // Summary
+                const passedCount = testResults.filter(t => t.passed).length;
+                log(`\n═══════════════════════════════════════`);
+                log(`✅ All ${passedCount}/8 SciPy tests passed!`, 'pass');
+                log(`═══════════════════════════════════════`);
+
+                setStatus('All tests passed! ✅', 'success');
+
+            } catch (error) {
+                log(`\n❌ Test failed: ${error.message}`, 'fail');
+                setStatus(`Test failed: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                runBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

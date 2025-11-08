@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pillow PyOdide Test Harness</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 { color: #4ec9b0; }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover { background: #1177bb; }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #252526;
+            border: 1px solid #3c3c3c;
+            padding: 15px;
+            margin-top: 20px;
+            min-height: 400px;
+            font-size: 13px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        #status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .loading { background: #f39c12; color: #000; }
+        .success { background: #27ae60; color: #fff; }
+        .error { background: #e74c3c; color: #fff; }
+        .pass { color: #4ec9b0; }
+        .fail { color: #f48771; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Pillow via PyOdide - Browser Test Harness</h1>
+    <p>This test runs all 12 Pillow filters in a real browser with PyOdide.</p>
+
+    <button onclick="runTests()" id="runBtn">Run All Pillow Tests</button>
+
+    <div id="status"></div>
+    <div id="log"></div>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js"></script>
+
+    <script type="module">
+        import pillow from '../pillow.js';
+
+        window.pillow = pillow;
+
+        let testResults = [];
+
+        function log(message, className = '') {
+            const logDiv = document.getElementById('log');
+            const span = document.createElement('span');
+            span.textContent = message + '\n';
+            if (className) span.className = className;
+            logDiv.appendChild(span);
+            console.log(message);
+        }
+
+        function setStatus(message, className = '') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = className;
+        }
+
+        async function createTestImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 20;
+            canvas.height = 20;
+            const ctx = canvas.getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 20, 20);
+            gradient.addColorStop(0, 'red');
+            gradient.addColorStop(0.5, 'green');
+            gradient.addColorStop(1, 'blue');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 20, 20);
+
+            return ctx.getImageData(0, 0, 20, 20);
+        }
+
+        function validateImageData(imageData, testName) {
+            if (!(imageData instanceof ImageData)) {
+                throw new Error(`${testName}: Result is not ImageData`);
+            }
+            if (imageData.width !== 20 || imageData.height !== 20) {
+                throw new Error(`${testName}: Incorrect dimensions`);
+            }
+        }
+
+        window.runTests = async function() {
+            const runBtn = document.getElementById('runBtn');
+            runBtn.disabled = true;
+            document.getElementById('log').textContent = '';
+            testResults = [];
+
+            try {
+                setStatus('Initializing PyOdide and Pillow...', 'loading');
+                log('🚀 Starting Pillow test suite...');
+                log('📦 Loading PyOdide and Pillow packages...');
+
+                await window.pillow.initializePyodide();
+
+                log('✅ PyOdide and Pillow loaded successfully!\n');
+
+                const testImage = await createTestImage();
+                log(`📸 Created test image: ${testImage.width}x${testImage.height}\n`);
+
+                // Test all 12 filters
+                const tests = [
+                    { name: 'Blur Filter', fn: () => window.pillow.blurFilter(testImage) },
+                    { name: 'Sharpen Filter', fn: () => window.pillow.sharpenFilter(testImage) },
+                    { name: 'Emboss Filter', fn: () => window.pillow.embossFilter(testImage) },
+                    { name: 'Find Edges Filter', fn: () => window.pillow.findEdgesFilter(testImage) },
+                    { name: 'Contour Filter', fn: () => window.pillow.contourFilter(testImage) },
+                    { name: 'Detail Filter', fn: () => window.pillow.detailFilter(testImage) },
+                    { name: 'Smooth Filter', fn: () => window.pillow.smoothFilter(testImage) },
+                    { name: 'Edge Enhance Filter', fn: () => window.pillow.edgeEnhanceFilter(testImage) },
+                    { name: 'Auto-Contrast', fn: () => window.pillow.autoContrast(testImage, 0) },
+                    { name: 'Equalize', fn: () => window.pillow.equalize(testImage) },
+                    { name: 'Posterize', fn: () => window.pillow.posterize(testImage, 4) },
+                    { name: 'Solarize', fn: () => window.pillow.solarize(testImage, 128) }
+                ];
+
+                for (const test of tests) {
+                    log(`Testing ${test.name}...`);
+                    const result = await test.fn();
+                    validateImageData(result, test.name);
+                    log(`✓ ${test.name}: PASSED`, 'pass');
+                    testResults.push({ name: test.name, passed: true });
+                    log('');
+                }
+
+                const passedCount = testResults.filter(t => t.passed).length;
+                log(`═══════════════════════════════════════`);
+                log(`✅ All ${passedCount}/12 Pillow tests passed!`, 'pass');
+                log(`═══════════════════════════════════════`);
+
+                setStatus('All tests passed! ✅', 'success');
+
+            } catch (error) {
+                log(`\n❌ Test failed: ${error.message}`, 'fail');
+                setStatus(`Test failed: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                runBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
