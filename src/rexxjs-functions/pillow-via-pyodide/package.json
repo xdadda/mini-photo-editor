@@ -1,0 +1,30 @@
+{
+  "name": "@rexxjs/pillow-via-pyodide",
+  "version": "1.0.0",
+  "description": "Real Pillow/PIL image processing via PyOdide for browser and REXX integration",
+  "main": "pillow.js",
+  "module": "pillow.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./pillow.js"
+    },
+    "./rexx": {
+      "import": "./pillow-optimized-for-rexx.js"
+    }
+  },
+  "keywords": [
+    "pillow",
+    "pil",
+    "pyodide",
+    "image-processing",
+    "filters",
+    "rexx",
+    "rexxjs"
+  ],
+  "author": "RexxJS Contributors",
+  "license": "MIT",
+  "peerDependencies": {
+    "pyodide": "^0.28.0"
+  }
+}

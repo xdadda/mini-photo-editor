@@ -349,6 +349,42 @@ class PhotoEditorControlBus {
         return { filters: this.model.listSciPyFilters() };
     }
 
+    // Pillow filter operations
+    async handleApplyPillowFilter(params) {
+        const { filterType, options = {} } = params;
+        if (!filterType) throw new Error('Missing parameter: filterType');
+
+        const result = this.model.applyPillowFilter(filterType, options);
+
+        if (this.appComponent && this.appComponent.forceUpdate) {
+            this.appComponent.forceUpdate();
+        }
+
+        return result;
+    }
+
+    async handleListPillowFilters() {
+        return { filters: this.model.listPillowFilters() };
+    }
+
+    // Scikit-Image filter operations
+    async handleApplySkimageFilter(params) {
+        const { filterType, options = {} } = params;
+        if (!filterType) throw new Error('Missing parameter: filterType');
+
+        const result = this.model.applySkimageFilter(filterType, options);
+
+        if (this.appComponent && this.appComponent.forceUpdate) {
+            this.appComponent.forceUpdate();
+        }
+
+        return result;
+    }
+
+    async handleListSkimageFilters() {
+        return { filters: this.model.listSkimageFilters() };
+    }
+
     // Info operations
     async handleGetImageInfo() {
         const metadata = this.model.getMetadata();

@@ -1,0 +1,31 @@
+{
+  "name": "@rexxjs/scikit-image-via-pyodide",
+  "version": "1.0.0",
+  "description": "Real scikit-image processing via PyOdide for browser and REXX integration",
+  "main": "scikit-image.js",
+  "module": "scikit-image.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./scikit-image.js"
+    },
+    "./rexx": {
+      "import": "./scikit-image-optimized-for-rexx.js"
+    }
+  },
+  "keywords": [
+    "scikit-image",
+    "skimage",
+    "pyodide",
+    "image-processing",
+    "denoising",
+    "restoration",
+    "rexx",
+    "rexxjs"
+  ],
+  "author": "RexxJS Contributors",
+  "license": "MIT",
+  "peerDependencies": {
+    "pyodide": "^0.28.0"
+  }
+}

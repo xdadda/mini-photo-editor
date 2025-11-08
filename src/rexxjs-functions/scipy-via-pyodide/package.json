@@ -1,0 +1,43 @@
+{
+  "name": "@rexxjs/scipy-via-pyodide",
+  "version": "1.0.0",
+  "description": "Real SciPy image processing via PyOdide for browser and REXX integration",
+  "main": "scipy.js",
+  "module": "scipy.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./scipy.js",
+      "require": "./scipy.js"
+    },
+    "./rexx": {
+      "import": "./scipy-optimized-for-rexx.js",
+      "require": "./scipy-optimized-for-rexx.js"
+    }
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "scipy",
+    "pyodide",
+    "image-processing",
+    "ndimage",
+    "rexx",
+    "rexxjs",
+    "browser",
+    "wasm"
+  ],
+  "author": "RexxJS Contributors",
+  "license": "MIT",
+  "peerDependencies": {
+    "pyodide": "^0.28.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RexxJS/scipy-via-pyodide"
+  }
+}

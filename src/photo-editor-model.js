@@ -34,7 +34,9 @@ class PhotoEditorModel {
             resizer: { width:0, height:0 },
             blur: { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, gaussianlensout:0.5, centerX:0.5, centerY:0.5 },
             heal: { healmask:0 },
-            scipy: { filterType: null, filterLabel: null, needsProcessing: false }
+            scipy: { filterType: null, filterLabel: null, needsProcessing: false },
+            pillow: { filterType: null, filterLabel: null, needsProcessing: false },
+            skimage: { filterType: null, filterLabel: null, needsProcessing: false }
         };
     }
 
@@ -180,7 +182,86 @@ class PhotoEditorModel {
             { type: 'sobel', label: 'Sobel Edge Detection', description: 'Detect edges using Sobel operator' },
             { type: 'median', label: 'Median Filter', description: 'Noise reduction using median filtering' },
             { type: 'laplace', label: 'Laplace Enhancement', description: 'Enhance edges using Laplacian' },
-            { type: 'uniform', label: 'Uniform Blur', description: 'Box blur smoothing' }
+            { type: 'uniform', label: 'Uniform Blur', description: 'Box blur smoothing' },
+            { type: 'morph_erosion', label: 'Morphological Erosion', description: 'Erode image features' },
+            { type: 'morph_dilation', label: 'Morphological Dilation', description: 'Dilate image features' },
+            { type: 'unsharp', label: 'Unsharp Mask', description: 'Sharpen using unsharp mask' }
+        ];
+    }
+
+    /**
+     * Apply a Pillow filter
+     */
+    applyPillowFilter(filterType, options = {}) {
+        const validFilters = ['blur', 'sharpen', 'emboss', 'find_edges', 'contour', 'detail', 'smooth', 'edge_enhance', 'autocontrast', 'equalize', 'posterize', 'solarize'];
+
+        if (!validFilters.includes(filterType)) {
+            throw new Error(`Unknown Pillow filter: ${filterType}`);
+        }
+
+        this.params.pillow.filterType = filterType;
+        this.params.pillow.needsProcessing = true;
+
+        return {
+            success: true,
+            filterType: filterType,
+            options: options
+        };
+    }
+
+    /**
+     * List available Pillow filters
+     */
+    listPillowFilters() {
+        return [
+            { type: 'blur', label: 'Blur', description: 'PIL blur filter' },
+            { type: 'sharpen', label: 'Sharpen', description: 'Sharpen filter' },
+            { type: 'emboss', label: 'Emboss', description: 'Emboss effect' },
+            { type: 'find_edges', label: 'Find Edges', description: 'Edge detection' },
+            { type: 'contour', label: 'Contour', description: 'Contour detection' },
+            { type: 'detail', label: 'Detail', description: 'Detail enhancement' },
+            { type: 'smooth', label: 'Smooth', description: 'Smooth filter' },
+            { type: 'edge_enhance', label: 'Edge Enhance', description: 'Edge enhancement' },
+            { type: 'autocontrast', label: 'Auto-Contrast', description: 'Automatic contrast adjustment' },
+            { type: 'equalize', label: 'Equalize', description: 'Histogram equalization' },
+            { type: 'posterize', label: 'Posterize', description: 'Reduce colors' },
+            { type: 'solarize', label: 'Solarize', description: 'Solarize effect' }
+        ];
+    }
+
+    /**
+     * Apply a Scikit-Image filter
+     */
+    applySkimageFilter(filterType, options = {}) {
+        const validFilters = ['denoise_tv', 'denoise_bilateral', 'canny_edges', 'morph_opening', 'morph_closing', 'adjust_gamma', 'equalize_adaptive', 'unsharp_mask'];
+
+        if (!validFilters.includes(filterType)) {
+            throw new Error(`Unknown Scikit-Image filter: ${filterType}`);
+        }
+
+        this.params.skimage.filterType = filterType;
+        this.params.skimage.needsProcessing = true;
+
+        return {
+            success: true,
+            filterType: filterType,
+            options: options
+        };
+    }
+
+    /**
+     * List available Scikit-Image filters
+     */
+    listSkimageFilters() {
+        return [
+            { type: 'denoise_tv', label: 'Denoise TV', description: 'Total variation denoising' },
+            { type: 'denoise_bilateral', label: 'Bilateral Denoise', description: 'Bilateral denoising' },
+            { type: 'canny_edges', label: 'Canny Edges', description: 'Canny edge detection' },
+            { type: 'morph_opening', label: 'Opening', description: 'Morphological opening' },
+            { type: 'morph_closing', label: 'Closing', description: 'Morphological closing' },
+            { type: 'adjust_gamma', label: 'Gamma', description: 'Gamma correction' },
+            { type: 'equalize_adaptive', label: 'Adaptive Equalize', description: 'Adaptive histogram equalization' },
+            { type: 'unsharp_mask', label: 'Unsharp Mask', description: 'Unsharp mask sharpening' }
         ];
     }
 
