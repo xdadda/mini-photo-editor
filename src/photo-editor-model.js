@@ -33,7 +33,8 @@ class PhotoEditorModel {
             blender: { blendmap:0, blendmix:0.5 },
             resizer: { width:0, height:0 },
             blur: { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, gaussianlensout:0.5, centerX:0.5, centerY:0.5 },
-            heal: { healmask:0 }
+            heal: { healmask:0 },
+            scipy: { filterType: null, filterLabel: null, needsProcessing: false }
         };
     }
 
@@ -145,6 +146,41 @@ class PhotoEditorModel {
             'clarendon2', 'crema', 'gingham', 'gingham2', 'juno', 'lark',
             'ludwig', 'moon', 'moon2', 'perpetua', 'perpetua2', 'reyes',
             'slumber', 'xpro'
+        ];
+    }
+
+    /**
+     * Apply a SciPy filter
+     * @param {string} filterType - Type of SciPy filter (gaussian, sobel, median, laplace, uniform)
+     * @param {object} options - Filter-specific options
+     */
+    applySciPyFilter(filterType, options = {}) {
+        const validFilters = ['gaussian', 'sobel', 'median', 'laplace', 'uniform'];
+
+        if (!validFilters.includes(filterType)) {
+            throw new Error(`Unknown SciPy filter: ${filterType}`);
+        }
+
+        this.params.scipy.filterType = filterType;
+        this.params.scipy.needsProcessing = true;
+
+        return {
+            success: true,
+            filterType: filterType,
+            options: options
+        };
+    }
+
+    /**
+     * List available SciPy filters
+     */
+    listSciPyFilters() {
+        return [
+            { type: 'gaussian', label: 'Gaussian Blur', description: 'Smooth blur using Gaussian kernel' },
+            { type: 'sobel', label: 'Sobel Edge Detection', description: 'Detect edges using Sobel operator' },
+            { type: 'median', label: 'Median Filter', description: 'Noise reduction using median filtering' },
+            { type: 'laplace', label: 'Laplace Enhancement', description: 'Enhance edges using Laplacian' },
+            { type: 'uniform', label: 'Uniform Blur', description: 'Box blur smoothing' }
         ];
     }
 

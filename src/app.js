@@ -38,7 +38,9 @@ import blender from './_blender.js'
 import blur from './_blur.js'
 import recipes from './_recipes.js'
 import heal from './_heal.js'
+import scipy from './_scipy.js'
 import InpaintTelea from './js/inpaint.js'
+import scipyProcessor from './scipy-via-pyodide.js'
 
 const initstate = {
   appname:'MiNi PhotoEditor',
@@ -98,7 +100,8 @@ export function Editor(input=false){
       blender: {blendmap:0, blendmix:0.5},
       resizer: {width:0, height:0},
       blur: { bokehstrength:0, bokehlensout:0.5, gaussianstrength:0, gaussianlensout:0.5, centerX:0.5, centerY:0.5},
-      heal: { healmask:0 }
+      heal: { healmask:0 },
+      scipy: { filterType: null, filterLabel: null, needsProcessing: false }
     }
 
   ///// INPUT/SAVE FUNCTIONs (for future integrations)
@@ -176,7 +179,16 @@ export function Editor(input=false){
       hideSplitView()
       splitwidth=0.5
       for(const s in params){
-        for(const v in params[s]) params[s][v]=0
+        for(const v in params[s]) {
+          // Special handling for scipy params
+          if(s === 'scipy' && (v === 'filterType' || v === 'filterLabel')) {
+            params[s][v] = null
+          } else if(s === 'scipy' && v === 'needsProcessing') {
+            params[s][v] = false
+          } else {
+            params[s][v] = 0
+          }
+        }
       }
     }
 
@@ -205,6 +217,50 @@ export function Editor(input=false){
     async function updateGL(){
       //load image's texture
       _minigl.loadImage()
+
+      // SCIPY PROCESSING (if needed)
+      if(params.scipy.needsProcessing && params.scipy.filterType) {
+        try {
+          const canvas = document.getElementById("canvas")
+          const ctx = canvas.getContext('2d', { willReadFrequently: true })
+
+          // Paint current state to canvas first
+          _minigl.paintCanvas()
+
+          // Get ImageData from canvas
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+          // Apply SciPy filter
+          let processedData
+          switch(params.scipy.filterType) {
+            case 'gaussian':
+              processedData = await scipyProcessor.applyGaussianFilter(imageData, 2.0)
+              break
+            case 'sobel':
+              processedData = await scipyProcessor.applySobelFilter(imageData, 1.0)
+              break
+            case 'median':
+              processedData = await scipyProcessor.applyMedianFilter(imageData, 3)
+              break
+            case 'laplace':
+              processedData = await scipyProcessor.applyLaplaceFilter(imageData, 0.5)
+              break
+            case 'uniform':
+              processedData = await scipyProcessor.applyUniformFilter(imageData, 5)
+              break
+          }
+
+          // Load processed image back into WebGL
+          if(processedData) {
+            _minigl.loadImage(processedData)
+          }
+
+          params.scipy.needsProcessing = false
+        } catch(error) {
+          console.error('SciPy processing error:', error)
+          params.scipy.needsProcessing = false
+        }
+      }
 
       if(params.heal.healit){
         //INPAINT
@@ -287,8 +343,8 @@ export function Editor(input=false){
       ///////////
 
       if(!params.curve.$skip && params.curve.curvepoints) _minigl.filterCurves(params.curve.curvepoints)
-      if(!params.filters.$skip && params.filters.opt) _minigl.filterInsta(params.filters.opt,params.filters.mix)      
-      
+      if(!params.filters.$skip && params.filters.opt) _minigl.filterInsta(params.filters.opt,params.filters.mix)
+
       if(!params.blur.$skip && params.blur.bokehstrength) {
         _minigl.filterBlurBokeh(params.blur)
       }
@@ -296,6 +352,9 @@ export function Editor(input=false){
         params.blur.gaussianlensout = params.blur.bokehlensout
         _minigl.filterBlurGaussian(params.blur)
       }
+
+      // Apply SciPy filter if active (but not during initial processing)
+      // SciPy processing happens at the beginning of updateGL when needsProcessing is true
 
       //draw to canvas
       _minigl.paintCanvas();
@@ -560,6 +619,9 @@ export function Editor(input=false){
 
                   /******** HEAL BRUSH *******/
                   ${heal($selection, params, updateGL)}
+
+                  /******** SCIPY FILTERS *******/
+                  ${scipy($selection, params, updateGL)}
 
                 </div>
 
