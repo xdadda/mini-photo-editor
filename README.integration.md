@@ -4,6 +4,8 @@
 
 This is the original [Mini Photo Editor](https://github.com/xdadda/mini-photo-editor) by xdadda, integrated with Tauri and RexxJS to provide scriptable control via ARexx-inspired commands.
 
+For general app integration patterns that apply to any application, see [App Integration Patterns](../../RexxJS/reference/37-app-integration-patterns.md). For the specific Mini Photo Editor implementation plan, see [Mini Photo Editor Integration Guide](../../RexxJS/reference/38-mini-photo-editor-integration.md).
+
 ## What's Been Added
 
 This integration adds three layers of scriptability:
@@ -120,7 +122,6 @@ examples/mini-photo-editor/
 ├── README.md                        # Original project README
 ├── README.rexx.md                   # Complete RexxJS command reference
 ├── README.integration.md            # This file
-├── REXXJS_INTEGRATION_PLAN.md       # Detailed integration architecture
 ├── photoeditor-dev                  # Development launcher script
 ├── sample-state.json                # Example state (moon filter + enhancements)
 │
@@ -408,7 +409,8 @@ curl http://localhost:8083/api/photoeditor \
 
 - **Original README**: [README.md](README.md)
 - **RexxJS Commands**: [README.rexx.md](README.rexx.md)
-- **Integration Plan**: [REXXJS_INTEGRATION_PLAN.md](REXXJS_INTEGRATION_PLAN.md)
+- **Integration Plan**: [Mini Photo Editor Integration Guide](../../RexxJS/reference/38-mini-photo-editor-integration.md)
+- **General Patterns**: [App Integration Patterns](../../RexxJS/reference/37-app-integration-patterns.md)
 - **RexxJS Project**: [https://github.com/paul-hammant/RexxJS](https://github.com/paul-hammant/RexxJS)
 - **Tauri**: [https://tauri.app/](https://tauri.app/)
 
